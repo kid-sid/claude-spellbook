@@ -1,0 +1,70 @@
+{
+  "permissions": {
+    "allow": [
+      "*"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write",
+        "hooks": [
+          { "type": "command", "command": "prettier --write $CLAUDE_FILE_PATH", "if": "Write(**/*.ts)" },
+          { "type": "command", "command": "prettier --write $CLAUDE_FILE_PATH", "if": "Write(**/*.svelte)" },
+          { "type": "command", "command": "black $CLAUDE_FILE_PATH", "if": "Write(**/*.py)" },
+          { "type": "command", "command": "gofmt -w $CLAUDE_FILE_PATH", "if": "Write(**/*.go)" },
+          { "type": "command", "command": "rustfmt $CLAUDE_FILE_PATH", "if": "Write(**/*.rs)" }
+        ]
+      },
+      {
+        "matcher": "Edit",
+        "hooks": [
+          { "type": "command", "command": "eslint --fix $CLAUDE_FILE_PATH", "if": "Edit(**/*.ts)" },
+          { "type": "command", "command": "eslint --fix $CLAUDE_FILE_PATH", "if": "Edit(**/*.svelte)" },
+          { "type": "command", "command": "ruff check --fix $CLAUDE_FILE_PATH", "if": "Edit(**/*.py)" },
+          { "type": "command", "command": "golangci-lint run $CLAUDE_FILE_PATH", "if": "Edit(**/*.go)" },
+          { "type": "command", "command": "cargo clippy --fix --allow-dirty 2>/dev/null || true", "if": "Edit(**/*.rs)" },
+          { "type": "command", "command": "markdownlint --fix $CLAUDE_FILE_PATH 2>/dev/null || true", "if": "Edit(**/*.md)" },
+          {
+            "type": "command",
+            "if": "Edit(skills/*/skill.md)",
+            "command": "bash -c 'FILE=\"$CLAUDE_FILE_PATH\"; echo \"--- Skill format check: $FILE ---\"; ERRORS=0; head -1 \"$FILE\" | grep -q \"^---\" || { echo \"FAIL: Missing frontmatter\"; ERRORS=1; }; grep -q \"^name:\" \"$FILE\" || { echo \"FAIL: Missing name:\"; ERRORS=1; }; grep -q \"^description:\" \"$FILE\" || { echo \"FAIL: Missing description:\"; ERRORS=1; }; grep -q \"## When to Activate\" \"$FILE\" || { echo \"FAIL: Missing When to Activate\"; ERRORS=1; }; grep -q \"## Checklist\" \"$FILE\" || { echo \"FAIL: Missing Checklist\"; ERRORS=1; }; grep -q \"\\- \\[ \\]\" \"$FILE\" || { echo \"FAIL: No checklist items\"; ERRORS=1; }; if [ $ERRORS -eq 0 ]; then echo \"PASS\"; fi'"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo \"[$(date +'%Y-%m-%d %H:%M:%S')] cmd ran\" >> .claude/command.log 2>/dev/null || true",
+            "async": true
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 -c \"\nimport sys, json\ndata = json.load(sys.stdin)\ncmd = data.get('tool_input', {}).get('command', '')\nif 'git push --force' in cmd and '--force-with-lease' not in cmd:\n    print('ERROR: Force push blocked. Use --force-with-lease or get explicit approval.')\n    sys.exit(2)\n\""
+          },
+          {
+            "type": "command",
+            "command": "python3 -c \"\nimport sys, json\ndata = json.load(sys.stdin)\ncmd = data.get('tool_input', {}).get('command', '')\nif 'rm -rf' in cmd:\n    print('WARNING: Recursive delete detected: ' + cmd[:120])\n\""
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          { "type": "command", "command": "git status" }
+        ]
+      }
+    ]
+  }
+}

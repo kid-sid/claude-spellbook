@@ -1,0 +1,7 @@
+{
+  "purpose": "Curated Claude Code extension library — 21 skills, 10 slash commands, 1 agent, linter configs for 6 languages, 3 project templates",
+  "structure": "skills/ — skill .md files by domain | .claude/commands/ — slash commands | .claude/agents/ — agents | tools/ — linter/formatter configs | templates/ — project scaffolds",
+  "conventions": "Every skill needs YAML frontmatter (name, description), When-to-Activate section, at least one comparison table, and a Checklist at the end",
+  "canonical_format": "Read skills/api-design and skills/claude-api first — they define the reference format for all skills",
+  "workflow": "make format (prettier on all md) | make lint (markdownlint) | make setup TARGET=<path> LANG=<python|node|go|rust|svelte|typescript>"
+}

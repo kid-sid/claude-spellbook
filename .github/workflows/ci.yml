@@ -1,0 +1,152 @@
+name: CI — Validate Spellbook
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  validate-skills:
+    name: Validate Skill Format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check skill frontmatter and structure
+        run: |
+          ERRORS=0
+          for skill in skills/*/skill.md; do
+            echo "--- Checking: $skill ---"
+            SKILL_ERRORS=0
+
+            # Check frontmatter opening
+            head -1 "$skill" | grep -q "^---" || { echo "  FAIL: Missing frontmatter (first line must be ---)"; SKILL_ERRORS=1; }
+
+            # Check required frontmatter fields
+            grep -q "^name:" "$skill" || { echo "  FAIL: Missing name: in frontmatter"; SKILL_ERRORS=1; }
+            grep -q "^description:" "$skill" || { echo "  FAIL: Missing description: in frontmatter"; SKILL_ERRORS=1; }
+
+            # Check required sections
+            grep -q "## When to Activate" "$skill" || { echo "  FAIL: Missing '## When to Activate' section"; SKILL_ERRORS=1; }
+            grep -q "## Checklist" "$skill" || { echo "  FAIL: Missing '## Checklist' section"; SKILL_ERRORS=1; }
+            grep -q "\- \[ \]" "$skill" || { echo "  FAIL: Checklist has no '- [ ]' items"; SKILL_ERRORS=1; }
+
+            if [ $SKILL_ERRORS -eq 0 ]; then
+              echo "  PASS"
+            else
+              ERRORS=$((ERRORS + SKILL_ERRORS))
+            fi
+          done
+
+          echo ""
+          if [ $ERRORS -gt 0 ]; then
+            echo "❌ $ERRORS format errors found"
+            exit 1
+          else
+            echo "✅ All skills passed format validation"
+          fi
+
+  lint-markdown:
+    name: Lint Markdown
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install markdownlint
+        run: npm install -g markdownlint-cli2
+
+      - name: Lint markdown files
+        run: |
+          markdownlint-cli2 "**/*.md" "#node_modules" "#.github" || true
+
+  validate-tools:
+    name: Validate Tool Configs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check install.sh is executable and parses
+        run: |
+          bash -n tools/install.sh
+          echo "✅ install.sh syntax OK"
+
+      - name: Verify tool config files exist
+        run: |
+          ERRORS=0
+          for lang in node typescript svelte python go rust; do
+            if [ ! -d "tools/$lang" ]; then
+              echo "FAIL: tools/$lang/ directory missing"
+              ERRORS=1
+            else
+              echo "PASS: tools/$lang/ exists"
+            fi
+          done
+
+          # Check key files
+          for f in tools/node/package.json tools/typescript/tsconfig.json tools/python/pyproject.toml tools/go/.golangci.yml tools/rust/rustfmt.toml tools/svelte/svelte.config.js; do
+            if [ ! -f "$f" ]; then
+              echo "FAIL: $f missing"
+              ERRORS=1
+            else
+              echo "PASS: $f exists"
+            fi
+          done
+
+          if [ $ERRORS -gt 0 ]; then
+            exit 1
+          else
+            echo "✅ All tool configs present"
+          fi
+
+  check-commands:
+    name: Validate Slash Commands
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check slash commands are non-empty
+        run: |
+          ERRORS=0
+          for cmd in .claude/commands/*.md; do
+            if [ ! -s "$cmd" ]; then
+              echo "FAIL: $cmd is empty"
+              ERRORS=1
+            else
+              LINES=$(wc -l < "$cmd")
+              echo "PASS: $cmd ($LINES lines)"
+            fi
+          done
+
+          if [ $ERRORS -gt 0 ]; then
+            exit 1
+          else
+            echo "✅ All slash commands validated"
+          fi
+
+  check-links:
+    name: Check Cross-References
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify skill cross-references
+        run: |
+          WARNINGS=0
+          # Find all skill references like "from X skill" or "X skill"
+          for skill in skills/*/skill.md; do
+            SKILL_NAME=$(basename $(dirname "$skill"))
+            # Check if other skills reference this one
+            REFS=$(grep -rl "$SKILL_NAME" skills/ --include="*.md" | grep -v "$skill" | wc -l)
+            if [ "$REFS" -gt 0 ]; then
+              echo "INFO: $SKILL_NAME is referenced by $REFS other skill(s)"
+            fi
+          done
+          echo "✅ Cross-reference check complete"

@@ -1,0 +1,56 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          # Get previous tag
+          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+
+          if [ -z "$PREV_TAG" ]; then
+            echo "First release — including all commits"
+            CHANGELOG=$(git log --oneline --pretty=format:"- %s" HEAD)
+          else
+            CHANGELOG=$(git log --oneline --pretty=format:"- %s" ${PREV_TAG}..HEAD)
+          fi
+
+          # Count changes
+          SKILLS=$(find skills -name "skill.md" | wc -l)
+          COMMANDS=$(find .claude/commands -name "*.md" 2>/dev/null | wc -l)
+          TOOLS=$(ls -d tools/*/ 2>/dev/null | wc -l)
+
+          # Write to file for the release body
+          cat > release_notes.md << 'NOTES_EOF'
+          ## What's in this release
+
+          ### Inventory
+          NOTES_EOF
+
+          echo "- **$SKILLS** skills covering the full SDLC" >> release_notes.md
+          echo "- **$COMMANDS** slash commands" >> release_notes.md
+          echo "- **$TOOLS** language tool configurations" >> release_notes.md
+          echo "" >> release_notes.md
+          echo "### Changes" >> release_notes.md
+          echo "$CHANGELOG" >> release_notes.md
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          body_path: release_notes.md
+          generate_release_notes: true

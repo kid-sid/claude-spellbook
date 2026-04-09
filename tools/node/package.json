@@ -1,0 +1,19 @@
+{
+  "name": "claude-spellbook",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Tool dependencies for claude-spellbook hooks",
+  "devDependencies": {
+    "prettier": "^3.3.3",
+    "markdownlint-cli2": "^0.14.0",
+    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "@typescript-eslint/parser": "^8.0.0",
+    "eslint": "^9.0.0"
+  },
+  "scripts": {
+    "format": "prettier --write \"**/*.{ts,js,json,md}\"",
+    "lint:md": "markdownlint-cli2 \"**/*.md\" \"#node_modules\"",
+    "lint:ts": "eslint src/**/*.ts",
+    "lint": "npm run lint:md && npm run lint:ts"
+  }
+}
