@@ -39,6 +39,7 @@ skills/<skill-name>/skill.md     — skill reference files (install to ~/.claude
 
 ### Security & Quality
 - `security` — OWASP Top 10, JWT/OAuth2, secrets management, STRIDE, dependency scanning
+- `accessibility` — WCAG 2.1/2.2 conformance, ARIA, keyboard navigation, focus management, contrast, screen readers
 - `claude-api` — Anthropic SDK patterns, tool use, streaming, agent SDK
 
 ### CI/CD & Infrastructure
@@ -58,6 +59,7 @@ skills/<skill-name>/skill.md     — skill reference files (install to ~/.claude
 | Agent | Purpose |
 |---|---|
 | `security-auditor` | Full codebase OWASP Top 10 audit — secrets, injection, auth, crypto, misconfiguration, dependencies |
+| `code-reviewer` | Deep PR review across logic, quality, security, test coverage, and performance for large diffs |
 
 ## Conventions for This Repo
 

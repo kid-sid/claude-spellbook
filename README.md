@@ -5,8 +5,8 @@
 **A curated library of skills, slash commands, and tool configs that turn Claude Code into a precision engineering assistant.**
 
 [![CI](https://github.com/sidharthamohanty/claude-spellbook/actions/workflows/ci.yml/badge.svg)](https://github.com/sidharthamohanty/claude-spellbook/actions/workflows/ci.yml)
-![Skills](https://img.shields.io/badge/skills-21-blueviolet)
-![Commands](https://img.shields.io/badge/slash%20commands-10-blue)
+![Skills](https://img.shields.io/badge/skills-22-blueviolet)
+![Commands](https://img.shields.io/badge/slash%20commands-11-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 *Each skill is a spell. Cast wisely.*
@@ -21,7 +21,7 @@
 |---|---|---|
 | **Skills** | Structured instruction sets loaded contextually by Claude | 21 |
 | **Slash Commands** | One-shot `/commands` for common engineering tasks | 10 |
-| **Agents** | Autonomous subprocesses for multi-file, long-running tasks | 1 |
+| **Agents** | Autonomous subprocesses for multi-file, long-running tasks | 2 |
 | **Tool Configs** | Drop-in linter/formatter configs for 6 languages | 6 |
 | **Templates** | Scaffold starters for Node, TypeScript, Python, Svelte | 4 |
 
@@ -131,6 +131,7 @@ When you describe a task, Claude matches it against the **"When to Activate"** s
 | Skill | Activates when… |
 |---|---|
 | `security` | Security reviews, threat modeling, auth/secrets |
+| `accessibility` | Building or auditing UI for WCAG conformance, ARIA, keyboard nav |
 | `claude-api` | Building with the Anthropic SDK or Agent SDK |
 
 #### CI/CD & Infrastructure
@@ -175,6 +176,12 @@ Scans a full codebase for OWASP Top 10 vulnerabilities: hardcoded secrets, injec
 
 **Tools:** `Read`, `Grep`, `Glob`, `Bash` · **Model:** Sonnet · **Color:** Red
 
+#### `code-reviewer`
+
+Performs a deep pull request review covering logic correctness, code quality, security, test coverage, and performance. Prefers reading full files (not just diff hunks) and follows symbols cross-file to catch invariant breaks, missing migrations, and unhandled callers.
+
+**Tools:** `Read`, `Grep`, `Glob`, `Bash` · **Model:** Sonnet · **Color:** Blue
+
 **Invoke by describing the task:**
 
 ```
@@ -196,6 +203,7 @@ Slash commands are one-shot prompts you run with `/command-name` in Claude Code.
 | Command | What it does |
 |---|---|
 | `/review` | Reviews staged/unstaged changes or a PR for quality and security issues |
+| `/changelog` | Generates a changelog from git history since the last release tag |
 | `/security-scan` | Audits code against OWASP Top 10 and the security skill checklist |
 | `/test-gen` | Generates unit and integration tests for a file or function |
 | `/explain` | Explains a file, function, or architectural pattern in depth |
