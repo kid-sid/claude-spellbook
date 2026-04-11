@@ -1,0 +1,16 @@
+{
+  "_meta": {
+    "max_chunks": 20,
+    "watermark": 217,
+    "last_session": "957c3ec0",
+    "last_save": "2026-04-11T12:00:33"
+  },
+  "chunks": [
+    {
+      "id": 1,
+      "ts": "2026-04-11T12:00:33",
+      "session": "957c3ec0",
+      "summary": "user: Continue where we left\nassistant: Let me load up the context from previous sessions.\nassistant: Got the context. Here's where things stand:\n\n**Project:** `memory_map` \u2014 a Python MCP server (fastmcp + httpx) providing persistent memory and conversation history tools for Claude Code.\n\n**Complete"
+    }
+  ]
+}

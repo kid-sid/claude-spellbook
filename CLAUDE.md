@@ -1,7 +1,30 @@
 ## Session Setup (Required)
-At the start of every session, call `load_memory` with `C:\Users\Sidhartha\claude-spellbook`.
-This gives you instant project context — do not explore files until you've loaded memory.
+At the start of every session, before doing anything else:
+1. Call `load_memory` with `C:\Users\Sidhartha\claude-spellbook`
+2. Call `load_history` with `C:\Users\Sidhartha\claude-spellbook`
+3. Read both outputs — they contain saved context and conversation history
+4. Do not explore files or ask clarifying questions that memory already answers
+
 Save or update memory entries whenever you learn something worth keeping across sessions.
+If something loaded from memory is no longer accurate, update it with `save_memory` using the same key.
+Use short, lowercase keys: `stack`, `current_work`, `gotchas`, `key_files`, etc. Keep values concise — one or two sentences max.
+
+---
+
+## MCP Server (memory_map)
+This repo includes an MCP server at `mcp/server.py` that provides persistent memory and conversation history.
+
+**Tools available:**
+- `load_memory` / `save_memory` / `delete_memory` — per-project key-value context store
+- `load_history` / `save_history` — rolling conversation history (20 chunks)
+- `set_compression` — set output compression level (0=raw, 1=compact, 2=dense)
+- `get_local_structure` — local directory tree (gitignore-aware)
+- `get_github_structure` — GitHub repo file tree
+- `get_git_history` — recent commits
+
+**One-time setup (already done):** `claude mcp add file-structure C:/Users/Sidhartha/claude-spellbook/mcp/venv/Scripts/python.exe C:/Users/Sidhartha/claude-spellbook/mcp/server.py`
+
+**Manual history save:** use `/mem_save` at any time to checkpoint the current conversation.
 
 ---
 
