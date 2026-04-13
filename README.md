@@ -19,8 +19,8 @@
 
 | Layer | What | Count |
 |---|---|---|
-| **Skills** | Structured instruction sets loaded contextually by Claude | 21 |
-| **Slash Commands** | One-shot `/commands` for common engineering tasks | 10 |
+| **Skills** | Structured instruction sets loaded contextually by Claude | 22 |
+| **Slash Commands** | One-shot `/commands` for common engineering tasks | 11 |
 | **Agents** | Autonomous subprocesses for multi-file, long-running tasks | 5 |
 | **Tool Configs** | Drop-in linter/formatter configs for 6 languages | 6 |
 | **Templates** | Scaffold starters for Node, TypeScript, Python, Svelte | 4 |
@@ -111,6 +111,7 @@ When you describe a task, Claude matches it against the **"When to Activate"** s
 | `system-design` | Designing systems, estimating capacity, drawing architecture |
 | `api-design` | Designing or reviewing REST endpoints |
 | `database-design` | Designing schemas, indexes, or migrations |
+| `microservices` | Decomposing services, designing async comms, circuit breakers, CQRS |
 
 #### Development
 | Skill | Activates when… |
@@ -179,11 +180,25 @@ Scans a full codebase for OWASP Top 10 vulnerabilities: hardcoded secrets, injec
 
 **Tools:** `Read`, `Grep`, `Glob`, `Bash` · **Model:** Sonnet · **Color:** Red
 
+```
+Audit the src/ directory for security vulnerabilities
+Do a full security review of this codebase
+Security scan everything under services/payments
+```
+
+> Reads context around every match before reporting — grep false positives are discarded silently.
+
 #### `code-reviewer`
 
-Performs a deep pull request review covering logic correctness, code quality, security, test coverage, and performance. Prefers reading full files (not just diff hunks) and follows symbols cross-file to catch invariant breaks, missing migrations, and unhandled callers.
+Performs a deep pull request review covering logic correctness, code quality, security, test coverage, and performance. Reads full files (not just diff hunks) and follows symbols cross-file to catch invariant breaks, missing migrations, and unhandled callers.
 
 **Tools:** `Read`, `Grep`, `Glob`, `Bash` · **Model:** Sonnet · **Color:** Blue
+
+```
+Review this PR in depth
+Do a thorough review of the changes in src/payments/
+Review PR 84 — it touches the auth layer
+```
 
 #### `dependency-auditor`
 
@@ -191,11 +206,23 @@ Scans all dependency manifests across a repository (`package.json`, `requirement
 
 **Tools:** `Read`, `Grep`, `Glob`, `Bash` · **Model:** Sonnet · **Color:** Orange
 
+```
+Audit all dependencies in this monorepo
+Check for vulnerable packages across the whole project
+Find outdated and unpinned dependencies
+```
+
 #### `test-coverage-agent`
 
 Analyses source files across a module, maps them against existing tests to find untested code paths, then writes the missing tests — following the project's existing framework, assertion library, and file naming conventions. Runs the new tests to verify they pass before finishing.
 
 **Tools:** `Read`, `Grep`, `Glob`, `Bash`, `Write` · **Model:** Sonnet · **Color:** Green
+
+```
+Generate tests for everything under src/payments/
+Find and fill coverage gaps in the auth module
+Add missing tests across the whole services/ directory
+```
 
 #### `onboarding-agent`
 
@@ -203,19 +230,11 @@ Reads the entire repository — structure, stack, routes, schemas, CI config, Ma
 
 **Tools:** `Read`, `Grep`, `Glob`, `Bash`, `Write` · **Model:** Sonnet · **Color:** Purple
 
-**Invoke by describing the task:**
-
 ```
-Audit the src/ directory for security vulnerabilities
-Do a full security review of this codebase
-Audit dependencies across this monorepo
-Generate tests for everything under src/payments/
 Write an onboarding guide for this repo
+Generate a new-joiner doc for a backend engineer joining next week
+Create an ONBOARDING.md for this service
 ```
-
-**Output:** Structured report with severity levels (Critical / High / Medium), file + line citations, evidence snippets, and specific fixes.
-
-> The agent reads context around every pattern match before reporting — false positives from grep are discarded silently.
 
 ---
 
@@ -251,6 +270,12 @@ Slash commands are one-shot prompts you run with `/command-name` in Claude Code.
 
 # Scaffold a new Python API service
 /scaffold python-api payments-service
+
+# Generate a changelog since the last release tag
+/changelog
+
+# Generate a changelog for a specific new version
+/changelog v2.1.0
 
 # Create an ADR for a recent decision
 /adr We chose Postgres over MongoDB because our data is highly relational
@@ -304,6 +329,67 @@ make help         # List all available make targets
 
 ---
 
+## Hooks
+
+The project ships a `settings.local.json` with Claude Code hooks that run automatically on every file write, edit, or bash command. Install them by copying into your project's `.claude/` directory.
+
+### PostToolUse — auto-format on write/edit
+
+| Trigger | Hook |
+|---|---|
+| Write `**/*.ts`, `**/*.svelte` | `prettier --write` |
+| Write `**/*.py` | `black` |
+| Write `**/*.go` | `gofmt -w` |
+| Write `**/*.rs` | `rustfmt` |
+| Edit `**/*.ts`, `**/*.svelte` | `eslint --fix` |
+| Edit `**/*.py` | `ruff check --fix` |
+| Edit `**/*.go` | `golangci-lint run` |
+| Edit `**/*.rs` | `cargo clippy --fix` |
+| Edit `**/*.md` | `markdownlint --fix` |
+| Edit `skills/*/skill.md` | Skill format validator (frontmatter, sections, checklist) |
+
+### PostToolUse — bash command log
+
+Every bash command is logged to `.claude/command.log` asynchronously — useful for auditing what Claude ran during a session.
+
+### PreToolUse — safety guards
+
+| Guard | What it blocks |
+|---|---|
+| `git push --force` (without `--force-with-lease`) | Blocked with an error |
+| `rm -rf` | Allowed but prints a warning with the command |
+
+---
+
+## MCP Server
+
+This repo includes an MCP server at `mcp/server.py` that provides persistent memory and conversation history across Claude Code sessions.
+
+### Tools exposed
+
+| Tool | What it does |
+|---|---|
+| `load_memory` / `save_memory` / `delete_memory` | Per-project key-value context store |
+| `load_history` / `save_history` | Rolling conversation history (20 chunks) |
+| `get_local_structure` | Local directory tree (gitignore-aware) |
+| `get_github_structure` | GitHub repo file tree |
+| `get_git_history` | Recent commits |
+| `set_compression` | Output compression level (0=raw, 1=compact, 2=dense) |
+
+### Setup (one-time)
+
+```bash
+claude mcp add file-structure \
+  /path/to/claude-spellbook/mcp/venv/Scripts/python.exe \
+  /path/to/claude-spellbook/mcp/server.py
+```
+
+### Usage
+
+The MCP server is invoked automatically at session start via the `CLAUDE.md` instructions. Use `/mem_save` at any time to manually checkpoint the current conversation.
+
+---
+
 ## CI / Workflows
 
 Two GitHub Actions workflows keep the spellbook healthy:
@@ -336,13 +422,21 @@ git push origin v1.2.0
 claude-spellbook/
 ├── skills/
 │   └── <skill-name>/
-│       └── skill.md          # Frontmatter + sections + checklist
+│       └── skill.md          # Frontmatter + sections + checklist (22 skills)
 │
 ├── .claude/
 │   ├── agents/
-│   │   └── <agent>.md        # Agent definitions (system prompt + frontmatter)
-│   └── commands/
-│       └── <command>.md      # Slash command definitions
+│   │   ├── security-auditor.md   # OWASP Top 10 codebase audit
+│   │   ├── code-reviewer.md      # Deep PR review
+│   │   ├── dependency-auditor.md # Multi-ecosystem dep vulnerability scan
+│   │   ├── test-coverage-agent.md# Coverage gap analysis + test generation
+│   │   └── onboarding-agent.md   # New-joiner guide generator
+│   ├── commands/
+│   │   └── <command>.md      # Slash command definitions (11 commands)
+│   └── settings.local.json   # Project hooks (auto-format, safety guards)
+│
+├── mcp/
+│   └── server.py             # MCP server: memory, history, repo structure tools
 │
 ├── tools/
 │   ├── install.sh            # Installer script
@@ -367,7 +461,8 @@ claude-spellbook/
 │   │   └── bug_report.md     # Issue template for bugs
 │   └── PULL_REQUEST_TEMPLATE.md
 │
-├── CLAUDE.md                 # Skill format spec and repo conventions
+├── CLAUDE.md                 # Session setup, skill/agent format spec, conventions
+├── CONTRIBUTING.md           # How to add skills, agents, commands, and tool configs
 └── Makefile                  # install / check / format / lint / setup
 ```
 
@@ -376,8 +471,6 @@ claude-spellbook/
 ## Writing a New Skill
 
 Every skill follows a strict format enforced by CI. Read `CLAUDE.md` for the full spec, or use `api-design` and `claude-api` as canonical examples.
-
-The required structure:
 
 ```markdown
 ---
@@ -402,19 +495,49 @@ One-sentence intro.
 To add a new skill:
 
 1. Create `skills/<name>/skill.md` following the format above
-2. Add an entry to the skill inventory table in `CLAUDE.md`
+2. Add an entry to the skill inventory table in `CLAUDE.md` and `README.md`
 3. Open a PR — CI will validate the format automatically
 
 To propose a skill without writing it, open an issue using the **New Skill Request** template.
 
 ---
 
+## Writing a New Agent
+
+Agents live at `.claude/agents/<name>.md`. The file body is a system prompt — write it in second person.
+
+```markdown
+---
+name: kebab-case-name
+description: One sentence — when to delegate to this agent vs. a slash command.
+tools: Read, Grep, Glob, Bash   # minimum required
+model: sonnet                   # sonnet | opus | haiku | inherit
+color: red                      # red | blue | green | yellow | purple | orange
+---
+
+You are a … agent. Your job is to …
+
+## Methodology
+…
+
+## Output Format
+…
+```
+
+Restrict `tools` to the minimum needed — a read-only agent must not have `Write` or `Edit`. After adding, update the Agent Inventory in `CLAUDE.md` and `README.md`.
+
+---
+
 ## Contributing
 
-1. Fork the repo and create a branch: `feat/skill-<name>` or `fix/<issue>`
-2. Follow the skill format — CI will catch format errors
-3. Fill in the PR template (type of change, checklist, test notes)
-4. Conventional commit messages: `feat:`, `fix:`, `docs:`, `chore:`
+See [`CONTRIBUTING.md`](CONTRIBUTING.md) for the full guide — branch naming, commit conventions, skill/agent format rules, and the PR process.
+
+Quick reference:
+
+1. Fork and branch: `feat/skill-<name>`, `feat/agent-<name>`, or `fix/<issue>`
+2. Follow the format — CI catches errors automatically
+3. Fill in the PR template
+4. Conventional commits: `feat:`, `fix:`, `docs:`, `chore:`
 
 ---
 
