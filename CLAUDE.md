@@ -83,6 +83,9 @@ skills/<skill-name>/skill.md     — skill reference files (install to ~/.claude
 |---|---|
 | `security-auditor` | Full codebase OWASP Top 10 audit — secrets, injection, auth, crypto, misconfiguration, dependencies |
 | `code-reviewer` | Deep PR review across logic, quality, security, test coverage, and performance for large diffs |
+| `dependency-auditor` | Audit all manifests for vulnerable, outdated, unpinned, and abandoned packages across every ecosystem |
+| `test-coverage-agent` | Map untested code paths across a module and write the missing tests |
+| `onboarding-agent` | Generate a new-joiner guide covering architecture, setup, key files, env vars, and gotchas |
 
 ## Conventions for This Repo
 

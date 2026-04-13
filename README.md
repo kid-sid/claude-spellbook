@@ -21,7 +21,7 @@
 |---|---|---|
 | **Skills** | Structured instruction sets loaded contextually by Claude | 21 |
 | **Slash Commands** | One-shot `/commands` for common engineering tasks | 10 |
-| **Agents** | Autonomous subprocesses for multi-file, long-running tasks | 2 |
+| **Agents** | Autonomous subprocesses for multi-file, long-running tasks | 5 |
 | **Tool Configs** | Drop-in linter/formatter configs for 6 languages | 6 |
 | **Templates** | Scaffold starters for Node, TypeScript, Python, Svelte | 4 |
 
@@ -165,8 +165,11 @@ Agents live in `.claude/agents/` and are invoked automatically when Claude decid
 | Review current git diff | `/review` | — |
 | Audit an entire service (40+ files) | — | `security-auditor` |
 | Generate tests for one function | `/test-gen` | — |
-| Generate tests for a whole module | — | *(coming soon)* |
+| Generate tests for a whole module | — | `test-coverage-agent` |
 | Explain a single file | `/explain` | — |
+| Check one manifest for outdated deps | manual `npm audit` | — |
+| Audit deps across a multi-stack repo | — | `dependency-auditor` |
+| Write a new-joiner guide | — | `onboarding-agent` |
 
 ### Available agents
 
@@ -182,12 +185,32 @@ Performs a deep pull request review covering logic correctness, code quality, se
 
 **Tools:** `Read`, `Grep`, `Glob`, `Bash` · **Model:** Sonnet · **Color:** Blue
 
+#### `dependency-auditor`
+
+Scans all dependency manifests across a repository (`package.json`, `requirements.txt`, `go.mod`, `Cargo.toml`, and more), runs ecosystem audit tools (`npm audit`, `pip-audit`, `cargo audit`, `govulncheck`), and produces a unified report covering vulnerabilities, unpinned versions, missing lock files, and abandoned packages.
+
+**Tools:** `Read`, `Grep`, `Glob`, `Bash` · **Model:** Sonnet · **Color:** Orange
+
+#### `test-coverage-agent`
+
+Analyses source files across a module, maps them against existing tests to find untested code paths, then writes the missing tests — following the project's existing framework, assertion library, and file naming conventions. Runs the new tests to verify they pass before finishing.
+
+**Tools:** `Read`, `Grep`, `Glob`, `Bash`, `Write` · **Model:** Sonnet · **Color:** Green
+
+#### `onboarding-agent`
+
+Reads the entire repository — structure, stack, routes, schemas, CI config, Makefile, environment variables, and git history — then writes an `ONBOARDING.md` covering what the service does, local setup, architecture overview, key files, env var reference, gotchas, and who to ask for what.
+
+**Tools:** `Read`, `Grep`, `Glob`, `Bash`, `Write` · **Model:** Sonnet · **Color:** Purple
+
 **Invoke by describing the task:**
 
 ```
 Audit the src/ directory for security vulnerabilities
 Do a full security review of this codebase
-Security scan everything under services/payments
+Audit dependencies across this monorepo
+Generate tests for everything under src/payments/
+Write an onboarding guide for this repo
 ```
 
 **Output:** Structured report with severity levels (Critical / High / Medium), file + line citations, evidence snippets, and specific fixes.
