@@ -89,6 +89,19 @@
           { "type": "command", "command": "git status" }
         ]
       }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python C:/Users/Sidhartha/claude-spellbook/mcp/history_hook.py --force",
+            "timeout": 15,
+            "async": true
+          }
+        ]
+      }
     ]
   }
 }

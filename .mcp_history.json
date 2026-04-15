@@ -1,9 +1,9 @@
 {
   "_meta": {
     "max_chunks": 20,
-    "watermark": 217,
-    "last_session": "957c3ec0",
-    "last_save": "2026-04-11T12:00:33"
+    "watermark": 15,
+    "last_session": "dd3ce5de",
+    "last_save": "2026-04-15T13:21:09"
   },
   "chunks": [
     {
@@ -11,6 +11,78 @@
       "ts": "2026-04-11T12:00:33",
       "session": "957c3ec0",
       "summary": "user: Continue where we left\nassistant: Let me load up the context from previous sessions.\nassistant: Got the context. Here's where things stand:\n\n**Project:** `memory_map` \u2014 a Python MCP server (fastmcp + httpx) providing persistent memory and conversation history tools for Claude Code.\n\n**Complete"
+    },
+    {
+      "id": 2,
+      "ts": "2026-04-14T00:00:00",
+      "session": "",
+      "summary": "Added CONTRIBUTING.md; rm global model-selector hook; +accessibility skill, 4 agents (code-reviewer,dep-auditor,test-cov,onboarding), /changelog; README: counts, hooks, MCP, tree, invoke examples, agent guide"
+    },
+    {
+      "id": 3,
+      "ts": "2026-04-15T12:45:15",
+      "session": "9ed8354a",
+      "summary": "Decisions: Created `CONTRIBUTING.md`, removed `UserPromptSubmit` hook from settings.  \nCode Changes: Added skills for accessibility, updated README.md, and CLAUDE.md.  \nTopics: Memory management, project gaps, repo usefulness.  \nProblems Solved: Clarified memory usage, filled project gaps."
+    },
+    {
+      "id": 4,
+      "ts": "2026-04-15T12:52:55",
+      "session": "9ed8354a",
+      "summary": "Decisions: Implement auto-save for session end. Code changes: Added `Stop` hook in `settings.local.json` for `history_hook.py`. Topics: Auto-save, hook system. Problems solved: Prevent session loss."
+    },
+    {
+      "id": 5,
+      "ts": "2026-04-15T13:00:00",
+      "session": "9ed8354a",
+      "summary": "Added .mcp_history.json+.mcp_memory.json to .gitignore; memory=context injection explained (2 stores: key-val facts + rolling history); 5 improvement suggestions: Stop hook, structured summaries, split memory keys, compress old chunks, keep memory in sync"
+    },
+    {
+      "id": 6,
+      "ts": "2026-04-15T12:58:10",
+      "session": "9ed8354a",
+      "summary": "Added `.mcp_history.json` to `.gitignore`; explained memory/context injection; wired Stop hook in `settings.local.json` for auto-save via `history_hook.py --force`."
+    },
+    {
+      "id": 7,
+      "ts": "2026-04-15T12:59:45",
+      "session": "9ed8354a",
+      "summary": "User asks if it's better than mempalace. Assistant requests clarification on mempalace's function for accurate comparison. No decisions or code changes made."
+    },
+    {
+      "id": 8,
+      "ts": "2026-04-15T13:01:13",
+      "session": "9ed8354a",
+      "summary": "Decisions: Compare MCP approaches. Code changes: None specified. Topics: Storage, retrieval, history, knowledge graph. Problems: Lossy vs. lossless storage, search efficiency."
+    },
+    {
+      "id": 9,
+      "ts": "2026-04-15T13:10:22",
+      "session": "9ed8354a",
+      "summary": "Decided to keep project-specific setup. No changes to code. Discussed MemPalace overhead vs. current setup benefits: scoped design, no retrieval needed, fits context."
+    },
+    {
+      "id": 10,
+      "ts": "2026-04-15T13:18:35",
+      "session": "9ed8354a",
+      "summary": "Mem feature final check complete. Memory updated, audit done. Files `.mcp_memory.json` & `.mcp_history.json` confirmed. Session hooks in `settings.local.json` verified. Ready for new features."
+    },
+    {
+      "id": 11,
+      "ts": "2026-04-15T13:19:19",
+      "session": "9ed8354a",
+      "summary": "10 chunks saved, max 20. Auto-save via `history_hook.py` active. 10 slots left before oldest chunks drop."
+    },
+    {
+      "id": 12,
+      "ts": "2026-04-15T13:20:11",
+      "session": "9ed8354a",
+      "summary": "Decisions: Clearing context saves memory; session termination risk unverified. Code changes: `history_hook.py --force` for context management. Topics: memory management, session handling. Problems: context persistence clarified."
+    },
+    {
+      "id": 13,
+      "ts": "2026-04-15T13:21:09",
+      "session": "dd3ce5de",
+      "summary": "12 chunks stored, max 20. 8 slots remain before oldest chunks drop (watermark at 375)."
     }
   ]
 }
