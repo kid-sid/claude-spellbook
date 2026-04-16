@@ -1,12 +1,17 @@
 <div align="center">
 
+<img src="assets/logo.png" alt="claude-spellbook logo" width="120" />
+
 # claude-spellbook
 
-**A curated library of skills, slash commands, and tool configs that turn Claude Code into a precision engineering assistant.**
+**Ship faster. Review smarter. Build with intent.**
 
-[![CI](https://github.com/sidharthamohanty/claude-spellbook/actions/workflows/ci.yml/badge.svg)](https://github.com/sidharthamohanty/claude-spellbook/actions/workflows/ci.yml)
-![Skills](https://img.shields.io/badge/skills-22-blueviolet)
-![Commands](https://img.shields.io/badge/slash%20commands-11-blue)
+A curated library of skills, slash commands, and agents that transform Claude Code  
+into a precision engineering assistant — one spell at a time.
+
+[![CI](https://github.com/kid-sid/claude-spellbook/actions/workflows/ci.yml/badge.svg)](https://github.com/kid-sid/claude-spellbook/actions/workflows/ci.yml)
+![Skills](https://img.shields.io/badge/skills-23-blueviolet)
+![Commands](https://img.shields.io/badge/slash%20commands-12-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 *Each skill is a spell. Cast wisely.*
@@ -19,8 +24,8 @@
 
 | Layer | What | Count |
 |---|---|---|
-| **Skills** | Structured instruction sets loaded contextually by Claude | 22 |
-| **Slash Commands** | One-shot `/commands` for common engineering tasks | 11 |
+| **Skills** | Structured instruction sets loaded contextually by Claude | 23 |
+| **Slash Commands** | One-shot `/commands` for common engineering tasks | 12 |
 | **Agents** | Autonomous subprocesses for multi-file, long-running tasks | 5 |
 | **Tool Configs** | Drop-in linter/formatter configs for 6 languages | 6 |
 | **Templates** | Scaffold starters for Node, TypeScript, Python, Svelte | 4 |
@@ -255,6 +260,7 @@ Slash commands are one-shot prompts you run with `/command-name` in Claude Code.
 | `/adr` | Generates an Architecture Decision Record from a discussion |
 | `/postmortem` | Generates a postmortem document from an incident description |
 | `/prd` | Generates a Product Requirements Document pre-filled from context |
+| `/mem_save` | Manually checkpoints the current conversation to `.mcp_history.json` |
 
 ### Usage examples
 
@@ -359,6 +365,15 @@ Every bash command is logged to `.claude/command.log` asynchronously — useful 
 | `git push --force` (without `--force-with-lease`) | Blocked with an error |
 | `rm -rf` | Allowed but prints a warning with the command |
 
+### Session lifecycle hooks
+
+| Event | Hook |
+|---|---|
+| `SessionStart` | Runs `git status` at the start of every session |
+| `UserPromptSubmit` | Runs `history_hook.py` on each prompt — incrementally saves conversation history |
+| `PreCompact` | Runs `history_hook.py --force` before context compaction — ensures history is not lost |
+| `Stop` | Runs `history_hook.py --force` async on session end — final checkpoint before exit |
+
 ---
 
 ## MCP Server
@@ -422,7 +437,7 @@ git push origin v1.2.0
 claude-spellbook/
 ├── skills/
 │   └── <skill-name>/
-│       └── skill.md          # Frontmatter + sections + checklist (22 skills)
+│       └── skill.md          # Frontmatter + sections + checklist (23 skills)
 │
 ├── .claude/
 │   ├── agents/
@@ -432,7 +447,7 @@ claude-spellbook/
 │   │   ├── test-coverage-agent.md# Coverage gap analysis + test generation
 │   │   └── onboarding-agent.md   # New-joiner guide generator
 │   ├── commands/
-│   │   └── <command>.md      # Slash command definitions (11 commands)
+│   │   └── <command>.md      # Slash command definitions (12 commands)
 │   └── settings.local.json   # Project hooks (auto-format, safety guards)
 │
 ├── mcp/

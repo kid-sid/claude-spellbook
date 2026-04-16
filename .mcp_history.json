@@ -1,29 +1,11 @@
 {
   "_meta": {
     "max_chunks": 20,
-    "watermark": 15,
-    "last_session": "dd3ce5de",
-    "last_save": "2026-04-15T13:21:09"
+    "watermark": 75,
+    "last_session": "f3bfdedc",
+    "last_save": "2026-04-16T05:18:43"
   },
   "chunks": [
-    {
-      "id": 1,
-      "ts": "2026-04-11T12:00:33",
-      "session": "957c3ec0",
-      "summary": "user: Continue where we left\nassistant: Let me load up the context from previous sessions.\nassistant: Got the context. Here's where things stand:\n\n**Project:** `memory_map` \u2014 a Python MCP server (fastmcp + httpx) providing persistent memory and conversation history tools for Claude Code.\n\n**Complete"
-    },
-    {
-      "id": 2,
-      "ts": "2026-04-14T00:00:00",
-      "session": "",
-      "summary": "Added CONTRIBUTING.md; rm global model-selector hook; +accessibility skill, 4 agents (code-reviewer,dep-auditor,test-cov,onboarding), /changelog; README: counts, hooks, MCP, tree, invoke examples, agent guide"
-    },
-    {
-      "id": 3,
-      "ts": "2026-04-15T12:45:15",
-      "session": "9ed8354a",
-      "summary": "Decisions: Created `CONTRIBUTING.md`, removed `UserPromptSubmit` hook from settings.  \nCode Changes: Added skills for accessibility, updated README.md, and CLAUDE.md.  \nTopics: Memory management, project gaps, repo usefulness.  \nProblems Solved: Clarified memory usage, filled project gaps."
-    },
     {
       "id": 4,
       "ts": "2026-04-15T12:52:55",
@@ -83,6 +65,66 @@
       "ts": "2026-04-15T13:21:09",
       "session": "dd3ce5de",
       "summary": "12 chunks stored, max 20. 8 slots remain before oldest chunks drop (watermark at 375)."
+    },
+    {
+      "id": 14,
+      "ts": "2026-04-15T19:52:56",
+      "session": "dd3ce5de",
+      "summary": "Updated README: Skills badge 22\u219223, Commands badge 11\u219212, added `/mem_save`, updated hooks (SessionStart, UserPromptSubmit, PreCompact, Stop), fixed repo structure comments."
+    },
+    {
+      "id": 15,
+      "ts": "2026-04-15T20:07:25",
+      "session": "dd3ce5de",
+      "summary": "Repo: claude-spellbook. 23 skills, 12 cmds, 5 agents for Claude Code. Automates audits, PRs, deps, onboarding. Cast spells wisely! \ud83e\uddd9 #dev #automation"
+    },
+    {
+      "id": 16,
+      "ts": "2026-04-15T20:12:35",
+      "session": "dd3ce5de",
+      "summary": "Decisions: Integrate memory_map for persistent memory. Code changes: Revised options for MCP server. Topics: Memory integration, user experience. Problems solved: Reduces need for re-explanation."
+    },
+    {
+      "id": 17,
+      "ts": "2026-04-16T05:02:13",
+      "session": "f3bfdedc",
+      "summary": "Image input supported via direct upload or file path (e.g., C:\\Users\\Sidhartha\\screenshot.png). Formats: PNG, JPG, GIF, WebP."
+    },
+    {
+      "id": 18,
+      "ts": "2026-04-16T05:02:54",
+      "session": "f3bfdedc",
+      "summary": "Discussed input methods in cmd: drag & drop images or use file path. Clipboard paste not supported. No code changes or decisions made."
+    },
+    {
+      "id": 19,
+      "ts": "2026-04-16T05:06:43",
+      "session": "f3bfdedc",
+      "summary": "Fixed CI badge URL in README (sidharthamohanty \u2192 kid-sid). Enhanced header: added catchy sub-headline & revised description for clarity."
+    },
+    {
+      "id": 20,
+      "ts": "2026-04-16T05:08:54",
+      "session": "f3bfdedc",
+      "summary": "Decided to create a logo for 'spell-book'. Prompt includes ancient spellbook, glowing pages with code syntax, quill pen, dark bg, flat-icon style. No text."
+    },
+    {
+      "id": 21,
+      "ts": "2026-04-16T05:09:57",
+      "session": "f3bfdedc",
+      "summary": "Decided on logo prompt for \"claude-spellbook\": ancient grimoire, glowing pages, code visible, quill pen, dark bg, flat icon style. No text, square comp, GitHub avatar."
+    },
+    {
+      "id": 22,
+      "ts": "2026-04-16T05:16:16",
+      "session": "f3bfdedc",
+      "summary": "Decided to place logo in `claude-spellbook/assets/logo.png`. Updated README to include logo in `<div align=\"center\">` with adjustable width."
+    },
+    {
+      "id": 23,
+      "ts": "2026-04-16T05:18:43",
+      "session": "f3bfdedc",
+      "summary": "Logo added to `assets/logo.png`, README updated to reference it."
     }
   ]
 }
