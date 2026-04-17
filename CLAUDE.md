@@ -64,6 +64,7 @@ skills/<skill-name>/skill.md     — skill reference files (install to ~/.claude
 - `security` — OWASP Top 10, JWT/OAuth2, secrets management, STRIDE, dependency scanning
 - `accessibility` — WCAG 2.1/2.2 conformance, ARIA, keyboard navigation, focus management, contrast, screen readers
 - `claude-api` — Anthropic SDK patterns, tool use, streaming, agent SDK
+- `azure` — DefaultAzureCredential, Blob Storage, AI Search (vector/hybrid), Document Intelligence, Key Vault, retry patterns
 
 ### CI/CD & Infrastructure
 - `ci-cd` — GitHub Actions workflows, quality gates, OIDC auth, artifact publishing

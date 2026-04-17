@@ -10,7 +10,7 @@ A curated library of skills, slash commands, and agents that transform Claude Co
 into a precision engineering assistant — one spell at a time.
 
 [![CI](https://github.com/kid-sid/claude-spellbook/actions/workflows/ci.yml/badge.svg)](https://github.com/kid-sid/claude-spellbook/actions/workflows/ci.yml)
-![Skills](https://img.shields.io/badge/skills-23-blueviolet)
+![Skills](https://img.shields.io/badge/skills-24-blueviolet)
 ![Commands](https://img.shields.io/badge/slash%20commands-12-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
@@ -24,7 +24,7 @@ into a precision engineering assistant — one spell at a time.
 
 | Layer | What | Count |
 |---|---|---|
-| **Skills** | Structured instruction sets loaded contextually by Claude | 23 |
+| **Skills** | Structured instruction sets loaded contextually by Claude | 24 |
 | **Slash Commands** | One-shot `/commands` for common engineering tasks | 12 |
 | **Agents** | Autonomous subprocesses for multi-file, long-running tasks | 5 |
 | **Tool Configs** | Drop-in linter/formatter configs for 6 languages | 6 |
@@ -139,6 +139,7 @@ When you describe a task, Claude matches it against the **"When to Activate"** s
 | `security` | Security reviews, threat modeling, auth/secrets |
 | `accessibility` | Building or auditing UI for WCAG conformance, ARIA, keyboard nav |
 | `claude-api` | Building with the Anthropic SDK or Agent SDK |
+| `azure` | Azure SDK auth, Blob Storage, AI Search, Document Intelligence, Key Vault |
 
 #### CI/CD & Infrastructure
 | Skill | Activates when… |
@@ -437,7 +438,7 @@ git push origin v1.2.0
 claude-spellbook/
 ├── skills/
 │   └── <skill-name>/
-│       └── skill.md          # Frontmatter + sections + checklist (23 skills)
+│       └── skill.md          # Frontmatter + sections + checklist (24 skills)
 │
 ├── .claude/
 │   ├── agents/

@@ -1,29 +1,11 @@
 {
   "_meta": {
     "max_chunks": 20,
-    "watermark": 75,
+    "watermark": 173,
     "last_session": "f3bfdedc",
-    "last_save": "2026-04-16T05:18:43"
+    "last_save": "2026-04-17T16:37:28"
   },
   "chunks": [
-    {
-      "id": 4,
-      "ts": "2026-04-15T12:52:55",
-      "session": "9ed8354a",
-      "summary": "Decisions: Implement auto-save for session end. Code changes: Added `Stop` hook in `settings.local.json` for `history_hook.py`. Topics: Auto-save, hook system. Problems solved: Prevent session loss."
-    },
-    {
-      "id": 5,
-      "ts": "2026-04-15T13:00:00",
-      "session": "9ed8354a",
-      "summary": "Added .mcp_history.json+.mcp_memory.json to .gitignore; memory=context injection explained (2 stores: key-val facts + rolling history); 5 improvement suggestions: Stop hook, structured summaries, split memory keys, compress old chunks, keep memory in sync"
-    },
-    {
-      "id": 6,
-      "ts": "2026-04-15T12:58:10",
-      "session": "9ed8354a",
-      "summary": "Added `.mcp_history.json` to `.gitignore`; explained memory/context injection; wired Stop hook in `settings.local.json` for auto-save via `history_hook.py --force`."
-    },
     {
       "id": 7,
       "ts": "2026-04-15T12:59:45",
@@ -125,6 +107,24 @@
       "ts": "2026-04-16T05:18:43",
       "session": "f3bfdedc",
       "summary": "Logo added to `assets/logo.png`, README updated to reference it."
+    },
+    {
+      "id": 24,
+      "ts": "2026-04-16T13:30:26",
+      "session": "f3bfdedc",
+      "summary": "Decisions: Add spell book to multiFileRAG. Code changes: Install agents, create `settings.local.json`. Topics: RAG pipeline, Azure, agents. Problems solved: Security, code review, dependency audit, test coverage."
+    },
+    {
+      "id": 25,
+      "ts": "2026-04-17T16:30:28",
+      "session": "f3bfdedc",
+      "summary": "Decisions: Add skills to multiFileRAG project. Code changes: Install `observability`, `security`, `performance` skills globally. Topics: Azure RAG, OpenAI embeddings, document processing. Problems solved: Metrics, secrets management, efficiency."
+    },
+    {
+      "id": 26,
+      "ts": "2026-04-17T16:37:28",
+      "session": "f3bfdedc",
+      "summary": "Created Azure skill in `skills/azure/skill.md`. Updated CLAUDE.md, README.md, and repo structure. Auth via `DefaultAzureCredential`, pydantic-settings for config, added Blob Storage & AI Search features."
     }
   ]
 }
