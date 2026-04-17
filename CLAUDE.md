@@ -65,6 +65,8 @@ skills/<skill-name>/skill.md     — skill reference files (install to ~/.claude
 - `accessibility` — WCAG 2.1/2.2 conformance, ARIA, keyboard navigation, focus management, contrast, screen readers
 - `claude-api` — Anthropic SDK patterns, tool use, streaming, agent SDK
 - `azure` — DefaultAzureCredential, Blob Storage, AI Search (vector/hybrid), Document Intelligence, Key Vault, retry patterns
+- `ai-engineer` — RAG pipelines, vector search, agent orchestration, prompt engineering, multimodal AI, cost optimization, AI safety
+- `complex-doc-rag` — RAG for PDFs (scanned, native, multi-column, tables, images), Excel (merged cells, charts, hidden sheets), CSV (dialect, encoding, wide tables), and standalone images; tiered extraction and edge-case handling
 
 ### CI/CD & Infrastructure
 - `ci-cd` — GitHub Actions workflows, quality gates, OIDC auth, artifact publishing

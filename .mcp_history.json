@@ -1,53 +1,11 @@
 {
   "_meta": {
     "max_chunks": 20,
-    "watermark": 173,
-    "last_session": "f3bfdedc",
-    "last_save": "2026-04-17T16:37:28"
+    "watermark": 88,
+    "last_session": "8b0f9268",
+    "last_save": "2026-04-17T22:45:59"
   },
   "chunks": [
-    {
-      "id": 7,
-      "ts": "2026-04-15T12:59:45",
-      "session": "9ed8354a",
-      "summary": "User asks if it's better than mempalace. Assistant requests clarification on mempalace's function for accurate comparison. No decisions or code changes made."
-    },
-    {
-      "id": 8,
-      "ts": "2026-04-15T13:01:13",
-      "session": "9ed8354a",
-      "summary": "Decisions: Compare MCP approaches. Code changes: None specified. Topics: Storage, retrieval, history, knowledge graph. Problems: Lossy vs. lossless storage, search efficiency."
-    },
-    {
-      "id": 9,
-      "ts": "2026-04-15T13:10:22",
-      "session": "9ed8354a",
-      "summary": "Decided to keep project-specific setup. No changes to code. Discussed MemPalace overhead vs. current setup benefits: scoped design, no retrieval needed, fits context."
-    },
-    {
-      "id": 10,
-      "ts": "2026-04-15T13:18:35",
-      "session": "9ed8354a",
-      "summary": "Mem feature final check complete. Memory updated, audit done. Files `.mcp_memory.json` & `.mcp_history.json` confirmed. Session hooks in `settings.local.json` verified. Ready for new features."
-    },
-    {
-      "id": 11,
-      "ts": "2026-04-15T13:19:19",
-      "session": "9ed8354a",
-      "summary": "10 chunks saved, max 20. Auto-save via `history_hook.py` active. 10 slots left before oldest chunks drop."
-    },
-    {
-      "id": 12,
-      "ts": "2026-04-15T13:20:11",
-      "session": "9ed8354a",
-      "summary": "Decisions: Clearing context saves memory; session termination risk unverified. Code changes: `history_hook.py --force` for context management. Topics: memory management, session handling. Problems: context persistence clarified."
-    },
-    {
-      "id": 13,
-      "ts": "2026-04-15T13:21:09",
-      "session": "dd3ce5de",
-      "summary": "12 chunks stored, max 20. 8 slots remain before oldest chunks drop (watermark at 375)."
-    },
     {
       "id": 14,
       "ts": "2026-04-15T19:52:56",
@@ -125,6 +83,48 @@
       "ts": "2026-04-17T16:37:28",
       "session": "f3bfdedc",
       "summary": "Created Azure skill in `skills/azure/skill.md`. Updated CLAUDE.md, README.md, and repo structure. Auth via `DefaultAzureCredential`, pydantic-settings for config, added Blob Storage & AI Search features."
+    },
+    {
+      "id": 27,
+      "ts": "2026-04-17T22:15:40",
+      "session": "f3bfdedc",
+      "summary": "Decided to keep `.github` in the repo. Discussed workflows for CI (format validation, markdown lint) and auto releases. Templates for issues and PRs noted as essential."
+    },
+    {
+      "id": 28,
+      "ts": "2026-04-17T22:16:27",
+      "session": "f3bfdedc",
+      "summary": "Decided to keep `.github` to maintain CI badge in README and skill format validation on PRs for spellbook functionality."
+    },
+    {
+      "id": 29,
+      "ts": "2026-04-17T22:17:46",
+      "session": "f3bfdedc",
+      "summary": "Spellbook can't be used in Codex as it relies on Claude Code's native features (skills, commands, agents, hooks). Codex uses AGENTS.md instead of CLAUDE.md."
+    },
+    {
+      "id": 30,
+      "ts": "2026-04-17T22:25:10",
+      "session": "e3eb0b60",
+      "summary": "Last chat: Image input methods, README fixes (CI badge, sub-headline), logo added, multiFileRAG agents/skills installed, Azure skill created."
+    },
+    {
+      "id": 31,
+      "ts": "2026-04-17T22:26:57",
+      "session": "e3eb0b60",
+      "summary": "Codex can't use Claude Code skills, hooks, commands, or agents. No code changes or decisions made. Discussed limitations of Codex vs. Claude Code features."
+    },
+    {
+      "id": 32,
+      "ts": "2026-04-17T22:35:35",
+      "session": "8b0f9268",
+      "summary": "Created `ai-engineer` skill: added to CLAUDE.md & README.md. Updated skill file with model selection, RAG arch, agent orchestration, prompt engineering. Bumped README badge count to 25."
+    },
+    {
+      "id": 33,
+      "ts": "2026-04-17T22:45:59",
+      "session": "8b0f9268",
+      "summary": "Decisions: Implement RAG pattern for complex docs (Excel, CSV, PDFs). Code changes: Added `skills/complex-doc-rag/skill.md`. Topics: edge cases, extraction tools, processing strategy. Problems solved: structured handling of diverse document types."
     }
   ]
 }
