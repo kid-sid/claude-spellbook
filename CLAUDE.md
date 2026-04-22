@@ -12,7 +12,7 @@ Use short, lowercase keys: `stack`, `current_work`, `gotchas`, `key_files`, etc.
 ---
 
 ## MCP Server (memory_map)
-This repo includes an MCP server at `mcp/server.py` that provides persistent memory and conversation history.
+Persistent memory and conversation history is provided by the standalone [memory_map](https://github.com/kid-sid/memory_map) repo — not bundled in this repo.
 
 **Tools available:**
 - `load_memory` / `save_memory` / `delete_memory` — per-project key-value context store
@@ -22,7 +22,34 @@ This repo includes an MCP server at `mcp/server.py` that provides persistent mem
 - `get_github_structure` — GitHub repo file tree
 - `get_git_history` — recent commits
 
-**One-time setup (already done):** `claude mcp add file-structure C:/Users/Sidhartha/claude-spellbook/mcp/venv/Scripts/python.exe C:/Users/Sidhartha/claude-spellbook/mcp/server.py`
+**One-time setup:**
+
+```bash
+# 1. Clone and install
+git clone https://github.com/kid-sid/memory_map.git
+cd memory_map
+python -m venv venv
+venv\Scripts\pip install -r requirements.txt   # Windows
+# source venv/bin/activate && pip install -r requirements.txt  # Mac/Linux
+
+# 2. Register globally (available in ALL projects)
+claude mcp add -s user memory_map C:/Users/yourname/memory_map/venv/Scripts/python.exe C:/Users/yourname/memory_map/server.py
+# Mac/Linux: claude mcp add -s user memory_map python3 /home/yourname/memory_map/server.py
+```
+
+**3. Add hooks to `~/.claude/settings.json`** so history saves automatically in every project:
+
+```json
+{
+  "hooks": {
+    "UserPromptSubmit": [{ "matcher": "", "hooks": [{ "type": "command", "command": "python C:/Users/yourname/memory_map/history_hook.py", "timeout": 10 }] }],
+    "PreCompact":       [{ "matcher": "", "hooks": [{ "type": "command", "command": "python C:/Users/yourname/memory_map/history_hook.py --force", "timeout": 15 }] }],
+    "Stop":             [{ "matcher": "", "hooks": [{ "type": "command", "command": "python C:/Users/yourname/memory_map/history_hook.py --force", "timeout": 15, "async": true }] }]
+  }
+}
+```
+
+**4. Enable memory for a project** — copy `CLAUDE.md` from the memory_map repo into the project root. Claude reads it at session start and calls `load_memory` / `load_history` automatically.
 
 **Manual history save:** use `/mem_save` at any time to checkpoint the current conversation.
 

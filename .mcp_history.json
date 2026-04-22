@@ -1,89 +1,11 @@
 {
   "_meta": {
     "max_chunks": 20,
-    "watermark": 88,
-    "last_session": "8b0f9268",
-    "last_save": "2026-04-17T22:45:59"
+    "watermark": 178,
+    "last_session": "b5934827",
+    "last_save": "2026-04-21T19:43:46"
   },
   "chunks": [
-    {
-      "id": 14,
-      "ts": "2026-04-15T19:52:56",
-      "session": "dd3ce5de",
-      "summary": "Updated README: Skills badge 22\u219223, Commands badge 11\u219212, added `/mem_save`, updated hooks (SessionStart, UserPromptSubmit, PreCompact, Stop), fixed repo structure comments."
-    },
-    {
-      "id": 15,
-      "ts": "2026-04-15T20:07:25",
-      "session": "dd3ce5de",
-      "summary": "Repo: claude-spellbook. 23 skills, 12 cmds, 5 agents for Claude Code. Automates audits, PRs, deps, onboarding. Cast spells wisely! \ud83e\uddd9 #dev #automation"
-    },
-    {
-      "id": 16,
-      "ts": "2026-04-15T20:12:35",
-      "session": "dd3ce5de",
-      "summary": "Decisions: Integrate memory_map for persistent memory. Code changes: Revised options for MCP server. Topics: Memory integration, user experience. Problems solved: Reduces need for re-explanation."
-    },
-    {
-      "id": 17,
-      "ts": "2026-04-16T05:02:13",
-      "session": "f3bfdedc",
-      "summary": "Image input supported via direct upload or file path (e.g., C:\\Users\\Sidhartha\\screenshot.png). Formats: PNG, JPG, GIF, WebP."
-    },
-    {
-      "id": 18,
-      "ts": "2026-04-16T05:02:54",
-      "session": "f3bfdedc",
-      "summary": "Discussed input methods in cmd: drag & drop images or use file path. Clipboard paste not supported. No code changes or decisions made."
-    },
-    {
-      "id": 19,
-      "ts": "2026-04-16T05:06:43",
-      "session": "f3bfdedc",
-      "summary": "Fixed CI badge URL in README (sidharthamohanty \u2192 kid-sid). Enhanced header: added catchy sub-headline & revised description for clarity."
-    },
-    {
-      "id": 20,
-      "ts": "2026-04-16T05:08:54",
-      "session": "f3bfdedc",
-      "summary": "Decided to create a logo for 'spell-book'. Prompt includes ancient spellbook, glowing pages with code syntax, quill pen, dark bg, flat-icon style. No text."
-    },
-    {
-      "id": 21,
-      "ts": "2026-04-16T05:09:57",
-      "session": "f3bfdedc",
-      "summary": "Decided on logo prompt for \"claude-spellbook\": ancient grimoire, glowing pages, code visible, quill pen, dark bg, flat icon style. No text, square comp, GitHub avatar."
-    },
-    {
-      "id": 22,
-      "ts": "2026-04-16T05:16:16",
-      "session": "f3bfdedc",
-      "summary": "Decided to place logo in `claude-spellbook/assets/logo.png`. Updated README to include logo in `<div align=\"center\">` with adjustable width."
-    },
-    {
-      "id": 23,
-      "ts": "2026-04-16T05:18:43",
-      "session": "f3bfdedc",
-      "summary": "Logo added to `assets/logo.png`, README updated to reference it."
-    },
-    {
-      "id": 24,
-      "ts": "2026-04-16T13:30:26",
-      "session": "f3bfdedc",
-      "summary": "Decisions: Add spell book to multiFileRAG. Code changes: Install agents, create `settings.local.json`. Topics: RAG pipeline, Azure, agents. Problems solved: Security, code review, dependency audit, test coverage."
-    },
-    {
-      "id": 25,
-      "ts": "2026-04-17T16:30:28",
-      "session": "f3bfdedc",
-      "summary": "Decisions: Add skills to multiFileRAG project. Code changes: Install `observability`, `security`, `performance` skills globally. Topics: Azure RAG, OpenAI embeddings, document processing. Problems solved: Metrics, secrets management, efficiency."
-    },
-    {
-      "id": 26,
-      "ts": "2026-04-17T16:37:28",
-      "session": "f3bfdedc",
-      "summary": "Created Azure skill in `skills/azure/skill.md`. Updated CLAUDE.md, README.md, and repo structure. Auth via `DefaultAzureCredential`, pydantic-settings for config, added Blob Storage & AI Search features."
-    },
     {
       "id": 27,
       "ts": "2026-04-17T22:15:40",
@@ -125,6 +47,84 @@
       "ts": "2026-04-17T22:45:59",
       "session": "8b0f9268",
       "summary": "Decisions: Implement RAG pattern for complex docs (Excel, CSV, PDFs). Code changes: Added `skills/complex-doc-rag/skill.md`. Topics: edge cases, extraction tools, processing strategy. Problems solved: structured handling of diverse document types."
+    },
+    {
+      "id": 34,
+      "ts": "2026-04-17T23:01:39",
+      "session": "8b0f9268",
+      "summary": "Decided to create a new repo named `codex-spellbook`. Prompt provided for repo structure: AGENTS.md, task prompts, agent templates for Codex."
+    },
+    {
+      "id": 35,
+      "ts": "2026-04-21T07:05:11",
+      "session": "8b0f9268",
+      "summary": "Decided to focus on the \"spellbook\" concept for LinkedIn post. Code changes not discussed. Topics: repo announcement, AI coding assistants, structured knowledge libraries."
+    },
+    {
+      "id": 36,
+      "ts": "2026-04-21T07:06:43",
+      "session": "8b0f9268",
+      "summary": "Dev AI tool `claude-spellbook` created for coding assistance. Encodes standards as markdown \"spells\" for context. Enhances dev lifecycle efficiency."
+    },
+    {
+      "id": 37,
+      "ts": "2026-04-21T07:11:50",
+      "session": "8b0f9268",
+      "summary": "Decided to create `claude-spellbook` lib for reusability. Focused on cursor-based pagination, table splitting, and Excel to DataFrame conversion. Enhanced session efficiency."
+    },
+    {
+      "id": 38,
+      "ts": "2026-04-21T07:25:07",
+      "session": "8b0f9268",
+      "summary": "Built library for auto-loading domain knowledge (API, RAG, security, tests). 26 skills, 5 agents, 12 commands, MCP srv for persistent memory. Focus on RAG skill for real-world docs."
+    },
+    {
+      "id": 39,
+      "ts": "2026-04-21T07:27:26",
+      "session": "8b0f9268",
+      "summary": "Dev: Built RAG skill for PDFs, Excel, images. Created library for auto-loading domain knowledge (26 skills, 5 agents, 12 cmds). MCP srv for persistent memory. Discussed API design, security, test gen."
+    },
+    {
+      "id": 40,
+      "ts": "2026-04-21T19:17:28",
+      "session": "b5934827",
+      "summary": "MCP srv not connected; `load_memory`/`load_history` tools unavailable. Config check needed. History hooks active; `.mcp_history.json` has data since Apr 16."
+    },
+    {
+      "id": 41,
+      "ts": "2026-04-21T19:18:40",
+      "session": "b5934827",
+      "summary": "Memory_map code present; venv missing. Decision: create venv & install deps. Code changes: cmd to create venv & install from requirements.txt. Next step: re-register MCP srv."
+    },
+    {
+      "id": 42,
+      "ts": "2026-04-21T19:23:40",
+      "session": "b5934827",
+      "summary": "Discussed `/mem_save` functionality; confirmed it uses hooks via `history_hook.py` with system Python (no venv). MCP server down affects `save_history`. Global deps: `httpx`, `dotenv`."
+    },
+    {
+      "id": 43,
+      "ts": "2026-04-21T19:26:03",
+      "session": "b5934827",
+      "summary": "Discussed MCP vs. memory_map: MCP enables read/write, hooks are write-only. MCP reads history for Claude; hooks save summaries. No code changes made."
+    },
+    {
+      "id": 44,
+      "ts": "2026-04-21T19:30:11",
+      "session": "b5934827",
+      "summary": "Fix in mem_map proj confirmed. Steps: 1) Create venv & install deps. 2) Register MCP srv with Claude. Restart session after changes."
+    },
+    {
+      "id": 45,
+      "ts": "2026-04-21T19:32:14",
+      "session": "b5934827",
+      "summary": "Fixed `C:\\Users\\Sidhartha\\memory_map`. Verified venv & packages, registered MCP srv. Update CLAUDE.md to point to correct `server.py` path. Tools ready: `load_memory`, `load_history`, `save_memory`."
+    },
+    {
+      "id": 46,
+      "ts": "2026-04-21T19:43:46",
+      "session": "b5934827",
+      "summary": "Change README for MCP reg to `--scope user`. Update hook setup to global for all projects. Store in `~/.claude.json`."
     }
   ]
 }

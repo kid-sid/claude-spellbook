@@ -10,8 +10,8 @@ A curated library of skills, slash commands, and agents that transform Claude Co
 into a precision engineering assistant — one spell at a time.
 
 [![CI](https://github.com/kid-sid/claude-spellbook/actions/workflows/ci.yml/badge.svg)](https://github.com/kid-sid/claude-spellbook/actions/workflows/ci.yml)
-![Skills](https://img.shields.io/badge/skills-26-blueviolet)
-![Commands](https://img.shields.io/badge/slash%20commands-12-blue)
+![Skills](https://img.shields.io/badge/skills-27-blueviolet)
+![Commands](https://img.shields.io/badge/slash%20commands-13-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 *Each skill is a spell. Cast wisely.*
@@ -24,9 +24,9 @@ into a precision engineering assistant — one spell at a time.
 
 | Layer | What | Count |
 |---|---|---|
-| **Skills** | Structured instruction sets loaded contextually by Claude | 26 |
-| **Slash Commands** | One-shot `/commands` for common engineering tasks | 12 |
-| **Agents** | Autonomous subprocesses for multi-file, long-running tasks | 5 |
+| **Skills** | Structured instruction sets loaded contextually by Claude | 27 |
+| **Slash Commands** | One-shot `/commands` for common engineering tasks | 13 |
+| **Agents** | Autonomous subprocesses for multi-file, long-running tasks | 6 |
 | **Tool Configs** | Drop-in linter/formatter configs for 6 languages | 6 |
 | **Templates** | Scaffold starters for Node, TypeScript, Python, Svelte | 4 |
 
@@ -373,15 +373,17 @@ Every bash command is logged to `.claude/command.log` asynchronously — useful 
 | Event | Hook |
 |---|---|
 | `SessionStart` | Runs `git status` at the start of every session |
-| `UserPromptSubmit` | Runs `history_hook.py` on each prompt — incrementally saves conversation history |
-| `PreCompact` | Runs `history_hook.py --force` before context compaction — ensures history is not lost |
-| `Stop` | Runs `history_hook.py --force` async on session end — final checkpoint before exit |
+| `UserPromptSubmit` | Runs `memory_map/history_hook.py` every 10 messages — saves conversation history |
+| `PreCompact` | Runs `memory_map/history_hook.py --force` before context compaction |
+| `Stop` | Runs `memory_map/history_hook.py --force` async on session end — final checkpoint |
+
+> These hooks live in `~/.claude/settings.json` (global) so they fire in every project. See the MCP Server section for the full config.
 
 ---
 
 ## MCP Server
 
-This repo includes an MCP server at `mcp/server.py` that provides persistent memory and conversation history across Claude Code sessions.
+Persistent memory and conversation history are provided by the standalone [memory_map](https://github.com/kid-sid/memory_map) repo. It gives Claude a key-value memory store and rolling conversation history that persist across sessions.
 
 ### Tools exposed
 
@@ -396,15 +398,60 @@ This repo includes an MCP server at `mcp/server.py` that provides persistent mem
 
 ### Setup (one-time)
 
+**Step 1 — Clone and install**
+
 ```bash
-claude mcp add file-structure \
-  /path/to/claude-spellbook/mcp/venv/Scripts/python.exe \
-  /path/to/claude-spellbook/mcp/server.py
+git clone https://github.com/kid-sid/memory_map.git
+cd memory_map
+
+# Windows
+python -m venv venv
+venv\Scripts\pip install -r requirements.txt
+
+# Mac/Linux
+python3 -m venv venv
+source venv/bin/activate && pip install -r requirements.txt
 ```
+
+**Step 2 — Register globally** (available in all projects, not just one)
+
+```bash
+# Windows
+claude mcp add -s user memory_map C:/Users/yourname/memory_map/venv/Scripts/python.exe C:/Users/yourname/memory_map/server.py
+
+# Mac/Linux
+claude mcp add -s user memory_map python3 /home/yourname/memory_map/server.py
+```
+
+**Step 3 — Add hooks to `~/.claude/settings.json`** so history saves in every project automatically
+
+```json
+{
+  "hooks": {
+    "UserPromptSubmit": [{ "matcher": "", "hooks": [{ "type": "command", "command": "python C:/Users/yourname/memory_map/history_hook.py", "timeout": 10 }] }],
+    "PreCompact":       [{ "matcher": "", "hooks": [{ "type": "command", "command": "python C:/Users/yourname/memory_map/history_hook.py --force", "timeout": 15 }] }],
+    "Stop":             [{ "matcher": "", "hooks": [{ "type": "command", "command": "python C:/Users/yourname/memory_map/history_hook.py --force", "timeout": 15, "async": true }] }]
+  }
+}
+```
+
+**Step 4 — Enable memory for a project**
+
+Copy `CLAUDE.md` from the memory_map repo into the root of any project you want Claude to remember:
+
+```bash
+# Windows
+copy C:\Users\yourname\memory_map\CLAUDE.md C:\Users\yourname\your-project\CLAUDE.md
+
+# Mac/Linux
+cp ~/memory_map/CLAUDE.md ~/your-project/CLAUDE.md
+```
+
+Claude reads `CLAUDE.md` at session start and calls `load_memory` / `load_history` automatically.
 
 ### Usage
 
-The MCP server is invoked automatically at session start via the `CLAUDE.md` instructions. Use `/mem_save` at any time to manually checkpoint the current conversation.
+Use `/mem_save` at any time to manually checkpoint the current conversation. Memory and history are stored as `.mcp_memory.json` and `.mcp_history.json` in each project root.
 
 ---
 
@@ -452,9 +499,6 @@ claude-spellbook/
 │   ├── commands/
 │   │   └── <command>.md      # Slash command definitions (12 commands)
 │   └── settings.local.json   # Project hooks (auto-format, safety guards)
-│
-├── mcp/
-│   └── server.py             # MCP server: memory, history, repo structure tools
 │
 ├── tools/
 │   ├── install.sh            # Installer script
