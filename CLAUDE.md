@@ -79,6 +79,9 @@ skills/<skill-name>/skill.md     — skill reference files (install to ~/.claude
 ### Development
 - `coding-standards` — naming conventions, SOLID, design patterns, code smells
 - `development-workflow` — branching, conventional commits, PR workflow, code review
+- `frontend` — React component design, state management (Zustand/Redux Toolkit), TanStack Query, React Hook Form, routing, performance, testing
+- `event-driven` — Kafka producer/consumer, topic partitioning, outbox pattern, dead-letter queues, idempotency, event sourcing
+- `caching` — Redis patterns, cache-aside/write-through/write-behind, TTL design, stampede prevention, HTTP Cache-Control, invalidation
 
 ### Testing
 - `unit-testing` — AAA pattern, mocking, parameterized tests, TDD, coverage
@@ -92,6 +95,8 @@ skills/<skill-name>/skill.md     — skill reference files (install to ~/.claude
 - `accessibility` — WCAG 2.1/2.2 conformance, ARIA, keyboard navigation, focus management, contrast, screen readers
 - `claude-api` — Anthropic SDK patterns, tool use, streaming, agent SDK
 - `azure` — DefaultAzureCredential, Blob Storage, AI Search (vector/hybrid), Document Intelligence, Key Vault, retry patterns
+- `azure-service-bus` — queues vs topics/subscriptions, peek-lock settlement, DLQ, sessions, subscription filters, scheduled messages
+- `aws` — IAM credential chain, S3, DynamoDB single-table design, Lambda, SQS batch, Secrets Manager, botocore retry
 - `ai-engineer` — RAG pipelines, vector search, agent orchestration, prompt engineering, multimodal AI, cost optimization, AI safety
 - `complex-doc-rag` — RAG for PDFs (scanned, native, multi-column, tables, images), Excel (merged cells, charts, hidden sheets), CSV (dialect, encoding, wide tables), and standalone images; tiered extraction and edge-case handling
 

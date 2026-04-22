@@ -10,7 +10,7 @@ A curated library of skills, slash commands, and agents that transform Claude Co
 into a precision engineering assistant — one spell at a time.
 
 [![CI](https://github.com/kid-sid/claude-spellbook/actions/workflows/ci.yml/badge.svg)](https://github.com/kid-sid/claude-spellbook/actions/workflows/ci.yml)
-![Skills](https://img.shields.io/badge/skills-27-blueviolet)
+![Skills](https://img.shields.io/badge/skills-32-blueviolet)
 ![Commands](https://img.shields.io/badge/slash%20commands-13-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
@@ -24,7 +24,7 @@ into a precision engineering assistant — one spell at a time.
 
 | Layer | What | Count |
 |---|---|---|
-| **Skills** | Structured instruction sets loaded contextually by Claude | 27 |
+| **Skills** | Structured instruction sets loaded contextually by Claude | 32 |
 | **Slash Commands** | One-shot `/commands` for common engineering tasks | 13 |
 | **Agents** | Autonomous subprocesses for multi-file, long-running tasks | 6 |
 | **Tool Configs** | Drop-in linter/formatter configs for 6 languages | 6 |
@@ -123,6 +123,9 @@ When you describe a task, Claude matches it against the **"When to Activate"** s
 |---|---|
 | `coding-standards` | Writing or reviewing code for quality/style |
 | `development-workflow` | Branching, PRs, commits, or code review |
+| `frontend` | Building React components, managing state, data fetching, forms, or optimizing rendering |
+| `event-driven` | Designing Kafka topics, producers/consumers, outbox pattern, DLQs, or event sourcing |
+| `caching` | Adding Redis, choosing a caching strategy, designing TTLs, or configuring HTTP cache headers |
 
 #### Testing
 | Skill | Activates when… |
@@ -140,6 +143,8 @@ When you describe a task, Claude matches it against the **"When to Activate"** s
 | `accessibility` | Building or auditing UI for WCAG conformance, ARIA, keyboard nav |
 | `claude-api` | Building with the Anthropic SDK or Agent SDK |
 | `azure` | Azure SDK auth, Blob Storage, AI Search, Document Intelligence, Key Vault |
+| `azure-service-bus` | Queues vs topics/subscriptions, peek-lock, DLQ, sessions, subscription filters, scheduled messages |
+| `aws` | boto3/SDK v3 auth, S3, DynamoDB, Lambda, SQS batch, Secrets Manager, IAM least privilege |
 | `ai-engineer` | Building RAG systems, LLM agents, vector search, or AI safety patterns |
 | `complex-doc-rag` | Ingesting PDFs, Excel, CSV, or images into a RAG pipeline; debugging extraction gaps |
 
