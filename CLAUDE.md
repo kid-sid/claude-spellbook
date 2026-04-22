@@ -82,6 +82,7 @@ skills/<skill-name>/skill.md     — skill reference files (install to ~/.claude
 - `frontend` — React component design, state management (Zustand/Redux Toolkit), TanStack Query, React Hook Form, routing, performance, testing
 - `event-driven` — Kafka producer/consumer, topic partitioning, outbox pattern, dead-letter queues, idempotency, event sourcing
 - `caching` — Redis patterns, cache-aside/write-through/write-behind, TTL design, stampede prevention, HTTP Cache-Control, invalidation
+- `claude-code` — skills/commands/agents setup, hooks (PreToolUse/PostToolUse/SessionStart/Stop), settings.json permissions, MCP servers, CLAUDE.md
 
 ### Testing
 - `unit-testing` — AAA pattern, mocking, parameterized tests, TDD, coverage

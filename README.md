@@ -10,7 +10,7 @@ A curated library of skills, slash commands, and agents that transform Claude Co
 into a precision engineering assistant — one spell at a time.
 
 [![CI](https://github.com/kid-sid/claude-spellbook/actions/workflows/ci.yml/badge.svg)](https://github.com/kid-sid/claude-spellbook/actions/workflows/ci.yml)
-![Skills](https://img.shields.io/badge/skills-32-blueviolet)
+![Skills](https://img.shields.io/badge/skills-33-blueviolet)
 ![Commands](https://img.shields.io/badge/slash%20commands-13-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
@@ -24,7 +24,7 @@ into a precision engineering assistant — one spell at a time.
 
 | Layer | What | Count |
 |---|---|---|
-| **Skills** | Structured instruction sets loaded contextually by Claude | 32 |
+| **Skills** | Structured instruction sets loaded contextually by Claude | 33 |
 | **Slash Commands** | One-shot `/commands` for common engineering tasks | 13 |
 | **Agents** | Autonomous subprocesses for multi-file, long-running tasks | 6 |
 | **Tool Configs** | Drop-in linter/formatter configs for 6 languages | 6 |
@@ -126,6 +126,7 @@ When you describe a task, Claude matches it against the **"When to Activate"** s
 | `frontend` | Building React components, managing state, data fetching, forms, or optimizing rendering |
 | `event-driven` | Designing Kafka topics, producers/consumers, outbox pattern, DLQs, or event sourcing |
 | `caching` | Adding Redis, choosing a caching strategy, designing TTLs, or configuring HTTP cache headers |
+| `claude-code` | Setting up skills, slash commands, agents, hooks, permissions, MCP servers, or CLAUDE.md |
 
 #### Testing
 | Skill | Activates when… |
