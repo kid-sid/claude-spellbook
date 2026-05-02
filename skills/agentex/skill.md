@@ -11,6 +11,15 @@ Agentex is a platform for building and deploying intelligent agents. The repo ha
 
 Agents are built with the `agentex-sdk` CLI and run as separate processes that register with the backend.
 
+## When to Activate
+
+- Choosing between sync, async, or Temporal agent type for a new agent
+- Wiring `acp.py`, `manifest.yaml`, or `run_worker.py` for a new agent
+- Using `adk.messages`, `adk.state`, or `adk.providers` in an activity or workflow
+- Debugging ACP protocol issues or agent registration failures
+- Understanding the backend DDD layer boundaries or exception mapping
+- Windows-specific setup issues (`uv sync`, port conflicts, `.env` loading)
+
 ---
 
 ## Agent Types
@@ -204,3 +213,17 @@ cd agentex
 # Specific file
 .\build.ps1 test -File tests/unit/test_foo.py
 ```
+
+---
+
+## Checklist
+
+- [ ] `acp_type` chosen correctly in `manifest.yaml` (sync / async / async + temporal)
+- [ ] Temporal agent `acp.py` has only `FastACP.create(acp_type="async", config=TemporalACPConfig(...))` — no handler decorators
+- [ ] `adk.messages.create` used to send responses (not returned from handlers)
+- [ ] State follows load → mutate → save pattern via `adk.state`
+- [ ] `on_task_create` ends with `await workflow.wait_condition(lambda: self._done)` for Temporal agents
+- [ ] `get_all_activities()` included in worker alongside custom activities
+- [ ] Agent port in `manifest.yaml` is unique across all running agents (8000, 8001, …)
+- [ ] Windows: `load_dotenv(override=False)` to avoid clobbering Docker env vars
+- [ ] Domain exceptions (`ClientError`, `ServiceError`, `ItemDoesNotExist`) used — not `HTTPException` in use cases

@@ -10,7 +10,7 @@ A curated library of skills, slash commands, and agents that transform Claude Co
 into a precision engineering assistant — one spell at a time.
 
 [![CI](https://github.com/kid-sid/claude-spellbook/actions/workflows/ci.yml/badge.svg)](https://github.com/kid-sid/claude-spellbook/actions/workflows/ci.yml)
-![Skills](https://img.shields.io/badge/skills-45-blueviolet)
+![Skills](https://img.shields.io/badge/skills-49-blueviolet)
 ![Commands](https://img.shields.io/badge/slash%20commands-13-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
@@ -24,7 +24,7 @@ into a precision engineering assistant — one spell at a time.
 
 | Layer | What | Count |
 |---|---|---|
-| **Skills** | Structured instruction sets loaded contextually by Claude | 45 |
+| **Skills** | Structured instruction sets loaded contextually by Claude | 49 |
 | **Slash Commands** | One-shot `/commands` for common engineering tasks | 13 |
 | **Agents** | Autonomous subprocesses for multi-file, long-running tasks | 6 |
 | **Tool Configs** | Drop-in linter/formatter configs for 6 languages | 6 |
@@ -123,8 +123,12 @@ When you describe a task, Claude matches it against the **"When to Activate"** s
 | `python` | Advanced type hints, async pitfalls, decorators, generators, or pattern matching |
 | `typescript` | Utility types, conditional/mapped types, discriminated unions, branded types, or `satisfies` |
 | `fastapi` | Structuring FastAPI apps, Depends injection, Pydantic v2 schemas, error handling, or testing routes |
+| `pydantic` | Deep `field_validator`/`model_validator`, `Annotated` constraints, serialization, generic models, or `pydantic-settings` |
+| `sqlalchemy` | Async SQLAlchemy 2.0 `Mapped` models, session management, joins, relationships, or Alembic migrations |
+| `mongodb` | Motor async CRUD, aggregation pipelines, index design, transactions, or `adk.state` patterns |
 | `postgresql` | Window functions, CTEs, JSONB queries, index design, `EXPLAIN ANALYZE`, or schema migrations |
 | `redis` | Choosing data structures, caching strategies, pub/sub, Redis Streams, or distributed locks |
+| `websockets-sse` | Real-time server push, LLM token streaming, WebSocket connection management, or Redis broadcast |
 
 #### Requirements & Design
 | Skill | Activates when… |
@@ -514,7 +518,7 @@ git push origin v1.2.0
 claude-spellbook/
 ├── skills/
 │   └── <skill-name>/
-│       └── skill.md          # Frontmatter + sections + checklist (45 skills)
+│       └── skill.md          # Frontmatter + sections + checklist (49 skills)
 │
 ├── .claude/
 │   ├── agents/

@@ -317,13 +317,12 @@ except Exception as e:
     return
 ```
 
-### Failure handling checklist
+**Failure handling pattern:**
 
-- [ ] `workflow.execute_activity` — always in `try/except`
-- [ ] `adk.state.get_by_task_and_agent` — wrap and return early on failure
-- [ ] `adk.providers.litellm.chat_completion` — wrap; save state before returning
-- [ ] All-items-failed guard after a loop of activities
-- [ ] Save state before every `return` so next signal loads clean data
+- Wrap `workflow.execute_activity` in `try/except` — continue or message user on failure
+- Wrap `adk.state.get_by_task_and_agent` — return early and message user on failure
+- Wrap `adk.providers.litellm.chat_completion` — save state before returning on failure
+- Save state before every `return` so the next signal loads clean data
 
 ---
 
@@ -423,3 +422,19 @@ agentex agents run --manifest manifest.yaml --debug-worker --debug-port 5679
 ```
 
 Temporal UI (inspect workflow history, signals, failures): http://localhost:8080
+
+---
+
+## Checklist
+
+- [ ] Workflow code has zero I/O — all HTTP, DB, and LLM calls are in activities
+- [ ] No `random`, `time.time()`, or I/O imports at module level in workflow files
+- [ ] `on_task_create` ends with `await workflow.wait_condition(lambda: self._done)`
+- [ ] Activities use `@activity.defn(name=CONSTANT)` with string constant matching `execute_activity()` call
+- [ ] `start_to_close_timeout` and `retry_policy` set on every `execute_activity` call
+- [ ] `workflow.execute_activity` wrapped in `try/except` to handle exhausted retries
+- [ ] `adk.state.get_by_task_and_agent` wrapped — unhandled exception → workflow FAILED
+- [ ] `adk.providers.litellm.chat_completion` wrapped — state saved before returning on failure
+- [ ] State saved before every `return` inside signal handlers so next signal loads clean data
+- [ ] `get_all_activities()` included alongside custom activities in `run_worker.py`
+- [ ] `WORKFLOW_NAME` and `WORKFLOW_TASK_QUEUE` are injected by the CLI — not set manually
