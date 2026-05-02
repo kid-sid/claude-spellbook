@@ -10,7 +10,7 @@ A curated library of skills, slash commands, and agents that transform Claude Co
 into a precision engineering assistant — one spell at a time.
 
 [![CI](https://github.com/kid-sid/claude-spellbook/actions/workflows/ci.yml/badge.svg)](https://github.com/kid-sid/claude-spellbook/actions/workflows/ci.yml)
-![Skills](https://img.shields.io/badge/skills-33-blueviolet)
+![Skills](https://img.shields.io/badge/skills-45-blueviolet)
 ![Commands](https://img.shields.io/badge/slash%20commands-13-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
@@ -24,7 +24,7 @@ into a precision engineering assistant — one spell at a time.
 
 | Layer | What | Count |
 |---|---|---|
-| **Skills** | Structured instruction sets loaded contextually by Claude | 33 |
+| **Skills** | Structured instruction sets loaded contextually by Claude | 45 |
 | **Slash Commands** | One-shot `/commands` for common engineering tasks | 13 |
 | **Agents** | Autonomous subprocesses for multi-file, long-running tasks | 6 |
 | **Tool Configs** | Drop-in linter/formatter configs for 6 languages | 6 |
@@ -109,6 +109,23 @@ When you describe a task, Claude matches it against the **"When to Activate"** s
 
 ### Skill inventory
 
+#### AI & Agents
+| Skill | Activates when… |
+|---|---|
+| `agentex` | Building ACP agents (sync/async/Temporal), working with manifests, ADK modules, or agent types |
+| `temporal` | Writing Temporal workflows, activities, signals, or debugging determinism and failure handling |
+| `langgraph` | Building StateGraph pipelines, conditional routing, tool calling, checkpointers, or interrupts |
+| `openai-agents` | Defining agents, `@function_tool`, handoffs, streaming, guardrails, or Agentex ADK integration |
+
+#### Languages & Frameworks
+| Skill | Activates when… |
+|---|---|
+| `python` | Advanced type hints, async pitfalls, decorators, generators, or pattern matching |
+| `typescript` | Utility types, conditional/mapped types, discriminated unions, branded types, or `satisfies` |
+| `fastapi` | Structuring FastAPI apps, Depends injection, Pydantic v2 schemas, error handling, or testing routes |
+| `postgresql` | Window functions, CTEs, JSONB queries, index design, `EXPLAIN ANALYZE`, or schema migrations |
+| `redis` | Choosing data structures, caching strategies, pub/sub, Redis Streams, or distributed locks |
+
 #### Requirements & Design
 | Skill | Activates when… |
 |---|---|
@@ -124,6 +141,9 @@ When you describe a task, Claude matches it against the **"When to Activate"** s
 | `coding-standards` | Writing or reviewing code for quality/style |
 | `development-workflow` | Branching, PRs, commits, or code review |
 | `frontend` | Building React components, managing state, data fetching, forms, or optimizing rendering |
+| `react` | Advanced hooks, Next.js App Router, compound components, error boundaries, or TypeScript + React patterns |
+| `angular` | Signals, standalone components, inject(), NgRx, RxJS patterns, or Angular 17+ control flow |
+| `tailwind` | Composing utilities, responsive design, dark mode, cva variants, or custom theme config |
 | `event-driven` | Designing Kafka topics, producers/consumers, outbox pattern, DLQs, or event sourcing |
 | `caching` | Adding Redis, choosing a caching strategy, designing TTLs, or configuring HTTP cache headers |
 | `claude-code` | Setting up skills, slash commands, agents, hooks, permissions, MCP servers, or CLAUDE.md |
@@ -154,6 +174,7 @@ When you describe a task, Claude matches it against the **"When to Activate"** s
 |---|---|
 | `ci-cd` | Writing GitHub Actions workflows or quality gates |
 | `containerization` | Writing Dockerfiles, Compose, or Kubernetes configs |
+| `docker` | Writing Dockerfiles, multi-stage builds, Compose networking, health checks, or debugging containers |
 | `infrastructure-as-code` | Working with Terraform modules or environments |
 
 #### Deployment & Operations
@@ -493,7 +514,7 @@ git push origin v1.2.0
 claude-spellbook/
 ├── skills/
 │   └── <skill-name>/
-│       └── skill.md          # Frontmatter + sections + checklist (24 skills)
+│       └── skill.md          # Frontmatter + sections + checklist (45 skills)
 │
 ├── .claude/
 │   ├── agents/
