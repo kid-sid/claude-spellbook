@@ -1,6 +1,6 @@
 ---
 name: react
-description: Use when building advanced React features — designing custom hooks, using Suspense or error boundaries, working in Next.js App Router with Server Components or Server Actions, or applying TypeScript generics and concurrent mode APIs.
+description: Use when building advanced React features — designing custom hooks, using Suspense or error boundaries, working in Next.js App Router with Server Components or Server Actions, applying TypeScript generics, or building animated UI with Framer Motion, View Transitions, or scroll-driven animations.
 ---
 
 # React — Advanced Patterns
@@ -498,6 +498,248 @@ fetch(url);                                // default: cached (SSG)
 
 ---
 
+## Animation
+
+### Library Choice
+
+| Library | Best for | Bundle |
+|---|---|---|
+| **Framer Motion** | Rich gestures, layout, shared element transitions | ~50kb |
+| **Motion (lightweight)** | Simple enter/exit, lower bundle cost | ~18kb |
+| **React Spring** | Physics-based, natural feel | ~45kb |
+| **CSS + Tailwind** | Simple transitions, no JS needed | 0kb |
+| **View Transitions API** | Page/route transitions (native browser) | 0kb |
+
+Rule: reach for CSS first, Framer Motion when you need gestures, layout animations, or `AnimatePresence`.
+
+---
+
+### Framer Motion — Core Patterns
+
+```tsx
+import { motion, AnimatePresence } from "framer-motion"
+
+// Basic animate — from initial to animate on mount
+<motion.div
+  initial={{ opacity: 0, y: 20 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ duration: 0.3, ease: "easeOut" }}
+/>
+
+// Exit animation — must be wrapped in AnimatePresence
+<AnimatePresence>
+  {isVisible && (
+    <motion.div
+      key="modal"
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.95 }}
+      transition={{ duration: 0.2 }}
+    />
+  )}
+</AnimatePresence>
+
+// Hover / tap — no useState needed
+<motion.button
+  whileHover={{ scale: 1.05 }}
+  whileTap={{ scale: 0.97 }}
+  transition={{ type: "spring", stiffness: 400, damping: 17 }}
+>
+  Click me
+</motion.button>
+```
+
+### Variants — orchestrate child animations
+
+```tsx
+const container = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.08 },  // children appear 80ms apart
+  },
+}
+
+const item = {
+  hidden: { opacity: 0, y: 16 },
+  show:   { opacity: 1, y: 0 },
+}
+
+<motion.ul variants={container} initial="hidden" animate="show">
+  {items.map(i => (
+    <motion.li key={i.id} variants={item}>{i.name}</motion.li>
+  ))}
+</motion.ul>
+```
+
+### Layout animations — animate position/size changes automatically
+
+```tsx
+// Add layoutId to animate an element moving between positions
+// (shared element transition — card expands to modal)
+<motion.div layoutId={`card-${id}`} className="card" onClick={expand} />
+
+// In the expanded view:
+<motion.div layoutId={`card-${id}`} className="modal" />
+
+// layout prop — animate any layout change (reorder, resize)
+<motion.div layout>
+  {/* Reorder items — Framer animates the position change */}
+</motion.div>
+```
+
+### Gestures — drag
+
+```tsx
+<motion.div
+  drag                              // free drag
+  drag="x"                         // constrain to x-axis
+  dragConstraints={{ left: -100, right: 100 }}
+  dragElastic={0.1}                 // resistance at boundary
+  onDragEnd={(_, info) => {
+    if (info.offset.x > 100) dismiss()
+  }}
+/>
+```
+
+### Scroll-triggered animations
+
+```tsx
+import { motion, useInView } from "framer-motion"
+import { useRef } from "react"
+
+function FadeInSection({ children }: { children: ReactNode }) {
+  const ref = useRef(null)
+  const inView = useInView(ref, { once: true, margin: "-100px" })
+
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 24 }}
+      animate={inView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.5, ease: "easeOut" }}
+    >
+      {children}
+    </motion.div>
+  )
+}
+```
+
+### useMotionValue + useTransform — scroll parallax
+
+```tsx
+import { useScroll, useTransform, motion } from "framer-motion"
+
+function ParallaxHero() {
+  const { scrollY } = useScroll()
+  const y = useTransform(scrollY, [0, 500], [0, -150])  // scroll 500px → move -150px
+
+  return (
+    <motion.div style={{ y }} className="hero-image" />
+  )
+}
+```
+
+---
+
+### CSS View Transitions API — page transitions
+
+Native browser API for animating between page states. No library needed.
+
+```tsx
+// Next.js App Router — use next-view-transitions
+// npm install next-view-transitions
+import { ViewTransitions } from "next-view-transitions"
+
+// app/layout.tsx
+export default function RootLayout({ children }) {
+  return (
+    <html>
+      <body>
+        <ViewTransitions>{children}</ViewTransitions>
+      </body>
+    </html>
+  )
+}
+
+// Use <Link> from next-view-transitions (not next/link)
+import { Link } from "next-view-transitions"
+<Link href="/about">About</Link>
+```
+
+```css
+/* Default cross-fade — customize with CSS */
+::view-transition-old(root) {
+  animation: 200ms ease fade-out;
+}
+::view-transition-new(root) {
+  animation: 200ms ease fade-in;
+}
+
+/* Named transition — shared element between pages */
+.hero-image { view-transition-name: hero; }
+```
+
+---
+
+### CSS `@starting-style` — enter animations without JS
+
+Animates an element from a style on its first render. No library, no `useEffect`.
+
+```css
+/* Button fades in when it appears in the DOM */
+.toast {
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+
+@starting-style {
+  .toast {
+    opacity: 0;   /* value when first painted */
+  }
+}
+```
+
+Works in Chrome 117+, Firefox 129+. Use Framer Motion as fallback for Safari.
+
+---
+
+### Performance Rules
+
+```tsx
+// ✅ Only animate transform and opacity — GPU composited, no layout
+{ opacity: 0, scale: 0.95, x: -20, y: 20, rotate: 5 }
+
+// ❌ Avoid animating layout-triggering properties
+{ width: 0, height: 0, margin: 0, padding: 0 }  // causes reflow every frame
+
+// Hint the browser for upcoming animation
+<motion.div style={{ willChange: "transform, opacity" }} />
+
+// Use layout animations instead of width/height animation
+<motion.div layout />   // Framer handles it with transform under the hood
+```
+
+---
+
+### Spring Config Reference
+
+```tsx
+// Snappy UI feedback (buttons, toggles)
+{ type: "spring", stiffness: 400, damping: 17 }
+
+// Smooth content transition
+{ type: "spring", stiffness: 200, damping: 25 }
+
+// Bouncy / playful
+{ type: "spring", stiffness: 300, damping: 10, mass: 0.5 }
+
+// No spring — precise timing
+{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }  // Material Design standard easing
+```
+
+---
+
 ## Red Flags
 
 - **`useEffect` with empty `[]` deps that closes over changing values** — an empty dep array on an effect that references props or state silently uses stale data on re-render; add correct deps or use a ref
@@ -518,5 +760,10 @@ fetch(url);                                // default: cached (SSG)
 - [ ] Next.js: Server Components for data fetching, Client Components only for interactivity
 - [ ] Next.js: Server Actions used for form mutations instead of API routes where possible
 - [ ] TypeScript event types used (not `any`) on all event handlers
+- [ ] Animations only use `transform` and `opacity` — no width/height/margin animation
+- [ ] `AnimatePresence` wraps any conditionally rendered `motion.*` element with `exit` prop
+- [ ] `layoutId` used for shared element transitions between routes or states
+- [ ] View Transitions API used for page transitions in Next.js (via `next-view-transitions`)
+- [ ] Spring config chosen to match interaction feel — snappy for UI feedback, smooth for content
 
 > See also: `frontend` (state management, TanStack Query, forms, routing, testing), `accessibility`
