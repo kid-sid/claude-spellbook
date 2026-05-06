@@ -11,7 +11,10 @@
       "Bash(cp /c/Users/Sidhartha/claude-spellbook/.claude/commands/* /c/Users/Sidhartha/.claude/commands/)",
       "WebFetch(domain:raw.githubusercontent.com)",
       "mcp__memory_map__load_memory",
-      "mcp__memory_map__load_history"
+      "mcp__memory_map__load_history",
+      "Bash(mkdir *)",
+      "WebFetch(domain:promptbase.com)",
+      "mcp__memory_map__save_history"
     ]
   },
   "hooks": {

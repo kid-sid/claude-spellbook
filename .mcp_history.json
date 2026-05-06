@@ -7,18 +7,6 @@
   },
   "chunks": [
     {
-      "id": 27,
-      "ts": "2026-04-17T22:15:40",
-      "session": "f3bfdedc",
-      "summary": "Decided to keep `.github` in the repo. Discussed workflows for CI (format validation, markdown lint) and auto releases. Templates for issues and PRs noted as essential."
-    },
-    {
-      "id": 28,
-      "ts": "2026-04-17T22:16:27",
-      "session": "f3bfdedc",
-      "summary": "Decided to keep `.github` to maintain CI badge in README and skill format validation on PRs for spellbook functionality."
-    },
-    {
       "id": 29,
       "ts": "2026-04-17T22:17:46",
       "session": "f3bfdedc",
@@ -125,6 +113,18 @@
       "ts": "2026-04-21T19:43:46",
       "session": "b5934827",
       "summary": "Change README for MCP reg to `--scope user`. Update hook setup to global for all projects. Store in `~/.claude.json`."
+    },
+    {
+      "id": 47,
+      "ts": "2026-05-06T13:44:12",
+      "session": "",
+      "summary": "Completed batch-4 Red Flags (7-8 items each) for 13 skills: langgraph, typescript, postgresql, docker, redis, openai-agents, tailwind, sqlalchemy, mongodb, pydantic, websockets-sse, agentex, temporal. All 50 skills now have ## Red Flags. Full impl complete: 50 \"Use when\" descriptions, 50 Red Flags sections, 2-stage code-reviewer split (spec+quality agents), writing-plans skill."
+    },
+    {
+      "id": 48,
+      "ts": "2026-05-06T18:56:14",
+      "session": "",
+      "summary": "Created general-temporal skill (no Agentex, pure temporalio SDK). Created promptbase-skill (scope rules, rejection fixes, listing copy templates). Audited langgraph skill \u2014 only fix: remove Agentex Integration section. Generated PromptBase listing copy for langgraph+general-temporal: descriptions, activation questions, examples, installation."
     }
   ]
 }

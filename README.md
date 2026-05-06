@@ -10,8 +10,8 @@ A curated library of skills, slash commands, and agents that transform Claude Co
 into a precision engineering assistant — one spell at a time.
 
 [![CI](https://github.com/kid-sid/claude-spellbook/actions/workflows/ci.yml/badge.svg)](https://github.com/kid-sid/claude-spellbook/actions/workflows/ci.yml)
-![Skills](https://img.shields.io/badge/skills-49-blueviolet)
-![Commands](https://img.shields.io/badge/slash%20commands-13-blue)
+![Skills](https://img.shields.io/badge/skills-52-blueviolet)
+![Commands](https://img.shields.io/badge/slash%20commands-12-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 *Each skill is a spell. Cast wisely.*
@@ -24,9 +24,9 @@ into a precision engineering assistant — one spell at a time.
 
 | Layer | What | Count |
 |---|---|---|
-| **Skills** | Structured instruction sets loaded contextually by Claude | 49 |
-| **Slash Commands** | One-shot `/commands` for common engineering tasks | 13 |
-| **Agents** | Autonomous subprocesses for multi-file, long-running tasks | 6 |
+| **Skills** | Structured instruction sets loaded contextually by Claude | 52 |
+| **Slash Commands** | One-shot `/commands` for common engineering tasks | 12 |
+| **Agents** | Autonomous subprocesses for multi-file, long-running tasks | 7 |
 | **Tool Configs** | Drop-in linter/formatter configs for 6 languages | 6 |
 | **Templates** | Scaffold starters for Node, TypeScript, Python, Svelte | 4 |
 
@@ -114,6 +114,7 @@ When you describe a task, Claude matches it against the **"When to Activate"** s
 |---|---|
 | `agentex` | Building ACP agents (sync/async/Temporal), working with manifests, ADK modules, or agent types |
 | `temporal` | Writing Temporal workflows, activities, signals, or debugging determinism and failure handling |
+| `general-temporal` | Building or debugging Temporal workflows in Python using the standard temporalio SDK — determinism, retries, signals, state, versioning |
 | `langgraph` | Building StateGraph pipelines, conditional routing, tool calling, checkpointers, or interrupts |
 | `openai-agents` | Defining agents, `@function_tool`, handoffs, streaming, guardrails, or Agentex ADK integration |
 
@@ -144,6 +145,7 @@ When you describe a task, Claude matches it against the **"When to Activate"** s
 |---|---|
 | `coding-standards` | Writing or reviewing code for quality/style |
 | `development-workflow` | Branching, PRs, commits, or code review |
+| `writing-plans` | Creating an implementation plan for a non-trivial task spanning multiple files, migrations, specific sequencing, or subagent handoff |
 | `frontend` | Building React components, managing state, data fetching, forms, or optimizing rendering |
 | `react` | Advanced hooks, Next.js App Router, compound components, error boundaries, or TypeScript + React patterns |
 | `angular` | Signals, standalone components, inject(), NgRx, RxJS patterns, or Angular 17+ control flow |
@@ -172,6 +174,7 @@ When you describe a task, Claude matches it against the **"When to Activate"** s
 | `aws` | boto3/SDK v3 auth, S3, DynamoDB, Lambda, SQS batch, Secrets Manager, IAM least privilege |
 | `ai-engineer` | Building RAG systems, LLM agents, vector search, or AI safety patterns |
 | `complex-doc-rag` | Ingesting PDFs, Excel, CSV, or images into a RAG pipeline; debugging extraction gaps |
+| `promptbase` | Writing, reviewing, or adapting a skill for PromptBase sale — scope, audience, rejection risk, listing copy, examples, setup |
 
 #### CI/CD & Infrastructure
 | Skill | Activates when… |
@@ -210,6 +213,9 @@ Agents live in `.claude/agents/` and are invoked automatically when Claude decid
 | Check one manifest for outdated deps | manual `npm audit` | — |
 | Audit deps across a multi-stack repo | — | `dependency-auditor` |
 | Write a new-joiner guide | — | `onboarding-agent` |
+| Full PR review (spec + quality) | — | `code-reviewer` |
+| Verify spec only, defer quality | — | `code-reviewer-spec` |
+| Quality pass after spec confirmed | — | `code-reviewer-quality` |
 
 ### Available agents
 
@@ -237,6 +243,30 @@ Performs a deep pull request review covering logic correctness, code quality, se
 Review this PR in depth
 Do a thorough review of the changes in src/payments/
 Review PR 84 — it touches the auth layer
+```
+
+#### `code-reviewer-spec`
+
+Stage 1 review only — verifies a change fully implements its stated requirements. Checks for missing pieces, scope creep, and gaps between the stated intent and the actual diff. Use before a quality pass.
+
+**Tools:** `Read`, `Grep`, `Glob`, `Bash` · **Model:** Sonnet · **Color:** Blue
+
+```
+Check if this change actually implements what was asked
+Verify the spec is fully covered before we merge
+Does this PR match the requirements in the ticket?
+```
+
+#### `code-reviewer-quality`
+
+Stage 2 review only — evaluates code quality, security, performance, and test coverage after spec compliance has been confirmed. Use after `code-reviewer-spec` gives the green light.
+
+**Tools:** `Read`, `Grep`, `Glob`, `Bash` · **Model:** Sonnet · **Color:** Blue
+
+```
+Quality review of this PR — spec is already confirmed
+Check for code smells, security issues, and missing tests
+Performance and coverage review on src/payments/
 ```
 
 #### `dependency-auditor`
@@ -518,15 +548,17 @@ git push origin v1.2.0
 claude-spellbook/
 ├── skills/
 │   └── <skill-name>/
-│       └── skill.md          # Frontmatter + sections + checklist (49 skills)
+│       └── skill.md          # Frontmatter + sections + checklist (52 skills)
 │
 ├── .claude/
 │   ├── agents/
-│   │   ├── security-auditor.md   # OWASP Top 10 codebase audit
-│   │   ├── code-reviewer.md      # Deep PR review
-│   │   ├── dependency-auditor.md # Multi-ecosystem dep vulnerability scan
-│   │   ├── test-coverage-agent.md# Coverage gap analysis + test generation
-│   │   └── onboarding-agent.md   # New-joiner guide generator
+│   │   ├── security-auditor.md      # OWASP Top 10 codebase audit
+│   │   ├── code-reviewer.md         # Deep PR review (full two-stage)
+│   │   ├── code-reviewer-spec.md    # Stage 1: spec compliance check
+│   │   ├── code-reviewer-quality.md # Stage 2: quality, security, coverage
+│   │   ├── dependency-auditor.md    # Multi-ecosystem dep vulnerability scan
+│   │   ├── test-coverage-agent.md   # Coverage gap analysis + test generation
+│   │   └── onboarding-agent.md      # New-joiner guide generator
 │   ├── commands/
 │   │   └── <command>.md      # Slash command definitions (12 commands)
 │   └── settings.local.json   # Project hooks (auto-format, safety guards)

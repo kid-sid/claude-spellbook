@@ -76,6 +76,7 @@ skills/<skill-name>/skill.md     — skill reference files (install to ~/.claude
 - `database-design` — schema design, indexing, migrations, query optimization
 - `microservices` — service decomposition, sync/async communication, circuit breaker, saga, CQRS, API gateway
 - `writing-plans` — zero-placeholder implementation plans: absolute paths, full code blocks, verify commands, rollback steps
+- `promptbase` — write and review Claude Code skills for PromptBase sale: scope rules, rejection reasons, listing copy, examples, pre-submission checklist
 
 ### Development
 - `coding-standards` — naming conventions, SOLID, design patterns, code smells
@@ -84,6 +85,7 @@ skills/<skill-name>/skill.md     — skill reference files (install to ~/.claude
 - `event-driven` — Kafka producer/consumer, topic partitioning, outbox pattern, dead-letter queues, idempotency, event sourcing
 - `caching` — Redis patterns, cache-aside/write-through/write-behind, TTL design, stampede prevention, HTTP Cache-Control, invalidation
 - `claude-code` — skills/commands/agents setup, hooks (PreToolUse/PostToolUse/SessionStart/Stop), settings.json permissions, MCP servers, CLAUDE.md
+- `general-temporal` — durable Python workflows with Temporal: workflow/activity split, determinism rules, retries, signals, state management, versioning, testing
 
 ### Testing
 - `unit-testing` — AAA pattern, mocking, parameterized tests, TDD, coverage
