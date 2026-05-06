@@ -1,6 +1,6 @@
 ---
 name: temporal
-description: Temporal workflow patterns for Agentex agents — BaseWorkflow structure, activities, signal handlers, state management, failure handling, and event replay. Use when building or debugging Temporal-based async agents in the scale-agentex repo.
+description: Use when building or debugging Temporal-based Agentex agents — structuring workflows and activities, handling signal routing, managing state across replays, or diagnosing workflow failures and retry exhaustion.
 ---
 
 # Temporal Workflows (Agentex)
@@ -424,6 +424,16 @@ agentex agents run --manifest manifest.yaml --debug-worker --debug-port 5679
 Temporal UI (inspect workflow history, signals, failures): http://localhost:8080
 
 ---
+
+## Red Flags
+
+- **I/O directly in workflow code** — `httpx`, database queries, or LLM calls in a workflow function break determinism; on replay Temporal returns the recorded result instead of re-executing, so the actual network call never happens and the code path diverges; all I/O must be in activities
+- **`random`, `time.time()`, or `datetime.now()` in a workflow** — these return different values on every replay, causing divergence; use `workflow.now()` for timestamps and pass randomness through activity return values
+- **`on_task_create` without `await workflow.wait_condition(lambda: self._done)`** — without this the workflow function returns immediately after startup, the workflow execution completes, and all subsequent `RECEIVE_EVENT` signals are dropped because there is no running workflow to receive them
+- **`workflow.execute_activity` without `try/except`** — when an activity exhausts its retry policy Temporal raises `ActivityError` into the workflow; unhandled, this puts the workflow into FAILED state and the user never receives an error message; always catch and notify
+- **Not saving state before `return` in a signal handler** — returning from `on_task_event_send` without calling `adk.state.update` leaves MongoDB with the state from the previous turn; the next signal handler loads stale data and the agent loses its context
+- **Not including `get_all_activities()` in `run_worker.py`** — ADK built-in activities handle `adk.messages`, `adk.state`, and tracing; omitting them causes every `adk.*` call to fail at runtime with "activity not registered on this worker"
+- **Importing I/O libraries at module level in workflow files** — Temporal's sandbox isolates workflow execution; `import httpx` at the top of a workflow file either fails in sandboxed mode or subtly breaks determinism; use `workflow.unsafe.imports_passed_through()` if you must import, or move the import into the activity file
 
 ## Checklist
 

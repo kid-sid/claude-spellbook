@@ -1,6 +1,6 @@
 ---
 name: websockets-sse
-description: WebSocket and Server-Sent Events (SSE) patterns covering FastAPI WebSocket endpoints, connection managers, SSE with StreamingResponse, Redis pub/sub and Streams for multi-worker broadcasting, heartbeats, reconnection, and client-side EventSource/WebSocket APIs.
+description: Use when building real-time features in FastAPI — choosing between WebSockets and SSE, implementing connection management, scaling broadcasts across workers with Redis, or debugging connection drops and missed events.
 ---
 
 # WebSockets and SSE Patterns
@@ -393,6 +393,16 @@ async def sse_auth(
 ```
 
 ---
+
+## Red Flags
+
+- **WebSocket when SSE is sufficient** — WebSocket requires sticky sessions or Redis coordination to scale and needs manual reconnection logic; if the server only pushes data (LLM tokens, task updates), SSE is simpler and supported everywhere with automatic browser reconnect
+- **No heartbeat on long-lived connections** — proxies and load balancers close idle connections after 30–60 s by default; without a periodic ping/comment, clients silently lose their connection and receive no more events
+- **In-process broadcast across multiple workers** — a `dict[str, WebSocket]` in memory only contains clients connected to the current worker; workers on different processes or machines never see each other's clients; use Redis pub/sub or Streams to fan out across all workers
+- **Missing `X-Accel-Buffering: no` header on SSE** — nginx buffers upstream responses by default and holds SSE data until its internal buffer fills; the client sees bursts instead of real-time events; always set this header on SSE endpoints
+- **Not closing `EventSource` after a `done` event** — `EventSource` auto-reconnects after any close; if the server ends the stream without the client calling `source.close()`, the browser reconnects and restarts the stream indefinitely
+- **Blocking synchronous calls inside an SSE generator** — a `time.sleep()` or synchronous DB call inside an async generator blocks the entire event loop and freezes all other SSE connections on that worker; always use `await asyncio.sleep(0)` to yield control
+- **`xread` with `block=0`** — blocking forever (`block=0`) holds the Redis connection open indefinitely and prevents graceful shutdown; use `block=5000` (5-second timeout) and loop, so the generator can detect disconnects and clean up
 
 ## Checklist
 

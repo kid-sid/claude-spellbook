@@ -1,6 +1,6 @@
 ---
 name: deployment-strategies
-description: "Deployment strategies: rolling updates, blue/green deployments, canary releases with automated analysis (Argo Rollouts/Flagger), feature flags (LaunchDarkly/Unleash/OpenFeature), expand-contract database migration pattern for zero-downtime deployments, and rollback procedures."
+description: "Use when choosing a deployment strategy for a release, setting up canary or blue/green rollouts, adding feature flags to decouple deployment from release, coordinating a zero-downtime database migration, or defining rollback criteria and procedures."
 ---
 
 # Deployment Strategies
@@ -286,6 +286,17 @@ helm rollback payment-service 3
 ```
 
 > See also: `ci-cd`, `containerization`, `observability`, `incident-response`
+
+## Red Flags
+
+- **Deploying a schema migration and an app change in the same atomic release** — if the migration succeeds but the app rollout fails mid-way, old pods still running see the new schema; migrations and app deploys must be sequenced across separate releases
+- **Setting `maxUnavailable: 1` instead of `0` for critical services** — during a rolling deploy, one pod is taken down before the new one is ready, briefly dropping capacity below the desired replica count and increasing error rates
+- **Feature flag with no documented cleanup date** — flags that ship but never get cleaned up accumulate into untested conditional branches; enforce a sprint deadline at the time of flag creation
+- **Blue/green flip without traffic warming on the Green environment** — an un-warmed JVM or cold connection pool on Green produces a latency spike immediately after the flip that looks like an outage
+- **Canary rollback based only on error rate, ignoring latency SLO** — a new version can stay under 1% errors while p99 latency doubles; always gate canary promotion on both error rate and latency thresholds
+- **Defining rollback criteria only after an incident starts** — ad-hoc rollback decisions under pressure are slow and inconsistent; criteria and commands must be written in the runbook before the deploy
+- **Rolling back a migration by dropping a column that the old app version still reads** — the old app immediately errors after the column is dropped; contract phases must be fully completed before any column is removed
+- **Using environment variables as a feature flag substitute for runtime toggles** — env var flags require a pod restart to take effect and cannot be changed per-user or per-percentage; use a proper feature flag service for runtime control
 
 ## Checklist
 

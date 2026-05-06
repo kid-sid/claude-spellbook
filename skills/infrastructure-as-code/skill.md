@@ -1,6 +1,6 @@
 ---
 name: infrastructure-as-code
-description: Terraform and IaC patterns: resource lifecycle, remote state (S3+DynamoDB / GCS), module structure, workspace vs directory-per-environment, plan/apply workflow with OPA policy checks, drift detection, terraform import, and common AWS/GCP resource patterns.
+description: Use when writing Terraform for cloud resources, setting up remote state, structuring modules for reuse, managing multiple environments, reviewing a plan before apply, or importing and resolving state drift.
 ---
 
 # Infrastructure as Code
@@ -408,6 +408,17 @@ moved {
 ```
 
 > See also: `ci-cd`, `containerization`, `security`
+
+## Red Flags
+
+- **Storing `terraform.tfstate` in git** — state files contain plaintext secrets (RDS passwords, private keys); use an S3+DynamoDB or GCS backend with server-side encryption from day one
+- **Running `terraform apply` directly without a saved plan** — `terraform apply` without `-out=tfplan` re-plans at apply time; what was reviewed in the PR and what actually runs can differ if state changed between plan and apply
+- **Using `terraform apply -auto-approve` in CI on the production environment** — auto-approve bypasses the human gate; production applies must require explicit approval via a GitHub environment protection rule
+- **Module pinned to `main` or with no version constraint** — `source = "git::...?ref=main"` means any upstream commit silently changes your infrastructure; pin to a specific git tag or Terraform registry version
+- **IAM policy with `"Action": "*"` or `"Resource": "*"`** — wildcard actions on all resources violates least privilege; scope to the exact actions and resource ARNs the role actually needs
+- **`terraform state rm` used to "fix" a drift problem** — removing a resource from state without destroying it creates orphaned cloud resources that accumulate cost and may introduce security gaps; use `moved` blocks or `terraform import` instead
+- **Deleting a Terraform resource block to decommission a resource** — removing the block from HCL causes `terraform plan` to show a destroy; validate intent with `terraform plan` and add `lifecycle { prevent_destroy = true }` on stateful resources
+- **Sharing a single state file across all environments** — one bad apply in staging can corrupt or lock the production state; each environment must have its own state file with its own backend key
 
 ## Checklist
 

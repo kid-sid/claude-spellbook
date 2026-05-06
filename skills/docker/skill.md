@@ -1,6 +1,6 @@
 ---
 name: docker
-description: Docker patterns covering multi-stage Dockerfile builds, layer caching, .dockerignore, Docker Compose service networking, health checks, volumes, secrets, and debugging containers. Includes Python and Node.js app patterns.
+description: Use when writing or optimizing Dockerfiles, configuring Docker Compose services, debugging containers that behave differently from local, or reducing image size for Python and Node.js apps.
 ---
 
 # Docker Patterns
@@ -347,6 +347,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 ```
 
 ---
+
+## Red Flags
+
+- **`COPY . .` before installing dependencies** — copying all source code first busts the dependency layer on every code change; always `COPY pyproject.toml uv.lock ./` → install → `COPY src/ ./` so deps are cached unless manifests change
+- **Running the container as root** — the default user is root inside a container; a process escape gives the attacker full host access; always add `RUN adduser --disabled-password appuser && USER appuser` in the runtime stage
+- **No health check on services others `depends_on`** — `depends_on` without `condition: service_healthy` starts the dependent service immediately, before the dependency is actually ready; always define a `healthcheck` and use `service_healthy`
+- **Secrets in `environment:` as plaintext** — environment variables are visible in `docker inspect`, CI logs, and image layers if baked in; use Docker secrets, a secrets manager, or pass via host env refs (`SECRET_KEY: ${SECRET_KEY}`)
+- **No `.dockerignore`** — without it, `COPY . .` sends the entire repo (`.git`, `node_modules`, `__pycache__`, `.env`) into the build context, bloating image size and potentially leaking secrets
+- **Single-stage build shipping build tools to production** — compilers, dev headers, and test dependencies included in the runtime image increase attack surface and image size; use multi-stage builds so the runtime stage starts fresh from a slim base
+- **Anonymous volumes for data that must persist** — `volumes: ["/var/lib/postgresql/data"]` (without a named volume) is recreated on `docker compose down`; use named volumes (`pg_data:/var/lib/postgresql/data`) to persist data across restarts
 
 ## Checklist
 

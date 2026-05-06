@@ -1,6 +1,6 @@
 ---
 name: pydantic
-description: Pydantic v2 deep dive covering BaseModel, field_validator, model_validator, Annotated constraints, ConfigDict, serialization (model_dump/model_dump_json), discriminated unions, generic models, TypeAdapter, and pydantic-settings for environment config.
+description: Use when defining request/response schemas, writing custom validators, controlling serialization for PATCH endpoints, validating non-model data with TypeAdapter, or configuring app settings from environment variables with pydantic-settings.
 ---
 
 # Pydantic v2 Patterns
@@ -346,6 +346,16 @@ settings = get_settings()   # cached singleton
 Env var names match field names case-insensitively. `list[str]` reads from `ALLOWED_ORIGINS=http://a.com,http://b.com` (comma-separated).
 
 ---
+
+## Red Flags
+
+- **Sharing API schemas with the domain layer** — using the same Pydantic model as both the HTTP request schema and the internal domain entity couples the API contract to business logic; changes to the API surface silently affect domain behavior and vice versa
+- **Mutable field defaults without `default_factory`** — `tags: list[str] = []` shares the same list object across all instances; use `tags: list[str] = Field(default_factory=list)` for any mutable default
+- **Not using `model_dump(exclude_unset=True)` for PATCH** — `model_dump()` on a partial-update model includes all fields set to their defaults, overwriting database values the client never sent; `exclude_unset=True` returns only the fields the caller explicitly provided
+- **`orm_mode = True` (v1 syntax) in a v2 project** — the v1 config key is silently ignored in Pydantic v2; use `model_config = ConfigDict(from_attributes=True)` instead
+- **Catching bare `Exception` from `model_validate`** — validation errors from Pydantic are `ValidationError`, not `ValueError` or `Exception`; catching the wrong type means bad input crashes the caller with an unhandled exception instead of a structured error response
+- **`model_dump()` when JSON-safe types are needed** — `model_dump()` returns Python objects (UUID, datetime, Decimal) that are not JSON-serializable; use `model_dump(mode="json")` or `model_dump_json()` when the result will be serialized to JSON or stored as a dict in MongoDB
+- **Repeating `Field(gt=0)` on every model instead of `Annotated` types** — duplicating constraints is error-prone and hard to update; define `PositiveInt = Annotated[int, Field(gt=0)]` once and reuse it everywhere
 
 ## Checklist
 

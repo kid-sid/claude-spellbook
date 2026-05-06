@@ -1,6 +1,6 @@
 ---
 name: aws
-description: AWS SDK patterns for Python (boto3) and TypeScript (AWS SDK v3) covering IAM credential chain, S3, DynamoDB single-table design, Lambda handlers, SQS batch processing, Secrets Manager, botocore retry config, and cost controls.
+description: Use when writing boto3 or AWS SDK v3 code — configuring IAM auth, reading/writing S3, designing DynamoDB access patterns, writing Lambda handlers, processing SQS batches, or troubleshooting credential and throttling errors.
 ---
 
 # AWS SDK Patterns
@@ -537,6 +537,16 @@ def safe_get_object(bucket: str, key: str) -> bytes | None:
 | CloudWatch Logs retention | Low | Set retention (7–30d) — default is forever |
 
 > See also: `event-driven`, `caching`, `observability`
+
+## Red Flags
+
+- **Hardcoded `aws_access_key_id` in code or config files** — long-term credentials in code are a top AWS compromise vector; use the credential chain (IAM role, instance profile, environment variable)
+- **`*` in IAM policy actions or resources** — wildcard policies grant far more than needed; scope every policy to the minimum set of actions and specific resource ARNs
+- **DynamoDB `Scan` in production code paths** — `Scan` reads every item in the table and consumes all provisioned capacity; design access patterns around `Query` using primary keys and GSIs
+- **Lambda handler that creates DB or SDK connections on every invocation** — connections initialized inside the handler are destroyed and recreated per call; initialize SDK clients outside the handler in module scope
+- **SQS visibility timeout shorter than Lambda timeout** — if visibility timeout < Lambda timeout, the message becomes visible before processing finishes, causing duplicate delivery; set visibility timeout to 6× Lambda timeout
+- **S3 presigned URLs without a short expiry** — presigned URLs with a far-future expiry can be bookmarked and reused long after the intended access window; always set the shortest practical expiry
+- **CloudWatch logs without structured JSON** — unstructured log lines can't be queried with CloudWatch Insights; emit JSON with consistent fields (`level`, `message`, `correlation_id`) from every Lambda
 
 ## Checklist
 

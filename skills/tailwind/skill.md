@@ -1,6 +1,6 @@
 ---
 name: tailwind
-description: Tailwind CSS v3/v4 patterns covering utility composition, responsive design, dark mode, custom theme config, cn() with clsx/tailwind-merge, class-variance-authority (cva) for component variants, animations, and common component patterns (buttons, cards, forms, modals).
+description: Use when composing Tailwind utilities, building responsive or dark-mode layouts, defining component variants with cva, resolving conflicting classes with tailwind-merge, or configuring a custom theme.
 ---
 
 # Tailwind CSS Patterns
@@ -401,6 +401,16 @@ const badgeVariants = cva(
 v4 changes: config moves to CSS `@theme`, faster build, no PostCSS required, native cascade layers.
 
 ---
+
+## Red Flags
+
+- **String template literals for conditional classes** — `` `bg-${color} p-4` `` generates class names at runtime that Tailwind's static scanner never sees and therefore never includes in the output CSS; use only complete class names from the source, with `cn()` for conditions
+- **Conflicting utilities without `tailwind-merge`** — `className="px-4 px-6"` applies both; the last rule in the stylesheet wins (not the last in the string), which is unpredictable; `twMerge` resolves conflicts correctly by keeping only the last conflicting utility
+- **Repeating variant logic in `if/else` strings** — `className={isActive ? "bg-blue-600 text-white rounded-lg px-4" : "bg-gray-100 text-gray-900 rounded-lg px-4"}` duplicates base classes; use `cva` to declare base + variant styles separately
+- **Arbitrary values that are repeated** — `w-[340px]` appearing in five components belongs in `theme.extend` as a named token; arbitrary values are for one-offs only
+- **Missing `dark:` variants on color utilities** — adding `bg-white text-gray-900` without corresponding `dark:bg-gray-900 dark:text-gray-100` makes dark mode look broken; pair every color with its dark-mode variant at the same time
+- **No `focus-visible:ring` on interactive elements** — keyboard users navigating with Tab have no visible indicator when focus styles are absent; every button and link needs a `focus-visible:ring-*` class for WCAG AA compliance
+- **Importing Tailwind classes from JS variables** — storing class names in a variable and spreading them defeats the static content scanner; Tailwind purges any class it cannot find as a complete string in the source at build time
 
 ## Checklist
 

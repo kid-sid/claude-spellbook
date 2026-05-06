@@ -1,6 +1,6 @@
 ---
 name: unit-testing
-description: "Unit testing patterns: test structure (Arrange/Act/Assert), mocking and stubbing, parameterized tests, TDD workflow, coverage strategy, and test organization. Examples in pytest, Jest/Vitest, and Go's testing package."
+description: Use when writing unit tests for a function or module, mocking external dependencies, practising TDD on new business logic, or enforcing a coverage target across a codebase in Python, TypeScript, or Go.
 ---
 
 # Unit Testing
@@ -647,6 +647,16 @@ func TestCalculate(t *testing.T) {
 ```
 
 ---
+
+## Red Flags
+
+- **Testing implementation details instead of behavior** — asserting on private method calls or internal state ties tests to refactoring; test what the unit does, not how it does it
+- **Mocking the unit under test** — a mock of the same class being tested verifies nothing; mocks belong at external boundaries only (DB, HTTP, filesystem)
+- **100% line coverage as the target** — chasing line coverage produces tests with no assertions ("did it run?" not "did it work?"); track branch coverage and mutation score instead
+- **`setUp` that builds shared mutable state** — shared state between tests creates ordering dependencies and flaky failures; each test must create its own independent fixtures
+- **`sleep()` or time delays in tests** — time-dependent tests are inherently flaky; inject a clock abstraction and control time explicitly in tests
+- **Testing private methods directly** — private methods are implementation details; test them through the public interface that uses them, or extract them into a separate collaborator
+- **No tests for error paths** — testing only the happy path misses the most common production bugs; every test file should cover each error condition and boundary case
 
 ## Checklist
 

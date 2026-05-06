@@ -1,6 +1,6 @@
 ---
 name: redis
-description: Redis patterns covering data structures (strings, hashes, lists, sorted sets, streams), TTL/expiration, pub/sub, Redis Streams for event sourcing, caching strategies, atomic operations, and async Python client (redis-py). Includes SSE streaming and job queue patterns.
+description: Use when choosing a Redis data structure for a use case, implementing caching or rate limiting, building pub/sub or Streams-based real-time messaging, or writing atomic operations like distributed locks.
 ---
 
 # Redis Patterns
@@ -364,6 +364,16 @@ async with client.pipeline(transaction=True) as pipe:
 ```
 
 ---
+
+## Red Flags
+
+- **No TTL on cache or session keys** — keys without expiry accumulate forever and evict randomly under memory pressure; set `ex=` on every `set()` call for cached data and sessions
+- **Using pub/sub for reliable delivery** — pub/sub is fire-and-forget; subscribers that are offline when a message is published never receive it; use Redis Streams with consumer groups for any message that must not be lost
+- **Single connection instead of a pool** — a single `await redis.from_url(...)` connection serializes all commands and blocks under concurrent load; use `ConnectionPool` with `max_connections` sized to your concurrency
+- **`KEYS *` in production** — `KEYS` is O(n) and blocks the Redis event loop while it scans every key; use `SCAN` with a cursor to iterate non-blocking, or redesign to avoid key enumeration entirely
+- **Distributed lock without a unique value** — a lock released by any caller using only the key (not the unique lock value) can accidentally release another owner's lock; always store a UUID as the value and use a Lua script to compare-then-delete atomically
+- **Unbounded stream growth** — `xadd` without `maxlen` lets the stream grow indefinitely; always set `maxlen=N` (with `approximate=True` for efficiency) or run periodic `xtrim`
+- **Sending multiple independent commands one at a time** — each `await client.set(...)` is a network round trip; batch three or more independent commands in a pipeline (`async with client.pipeline()`) to cut round-trip overhead significantly
 
 ## Checklist
 

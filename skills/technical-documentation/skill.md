@@ -1,6 +1,6 @@
 ---
 name: technical-documentation
-description: Technical documentation: README structure and templates, OpenAPI/Swagger YAML (paths, schemas, $ref reuse, security schemes), runbook writing, Architecture Decision Records (ADRs), technical spec templates, and docs-as-code with MkDocs/Docusaurus/mdBook.
+description: Use when writing a README, documenting an API with OpenAPI, drafting a runbook for on-call engineers, authoring a technical spec or ADR, or setting up docs-as-code with auto-deploy to GitHub Pages.
 ---
 
 # Technical Documentation
@@ -427,6 +427,16 @@ jobs:
 ```
 
 > See also: `api-design`, `system-design`, `incident-response`
+
+## Red Flags
+
+- **README with only "git clone && npm install"** — a quickstart without prerequisites (runtime version, env vars, required services) fails for every new developer; list every dependency
+- **OpenAPI spec written after the API is built** — spec-first forces design conversations before code is committed; spec-after just documents the implementation's accidents
+- **`$ref` components duplicated across paths** — duplicate schemas diverge silently; extract all reusable types to `components/schemas` and `$ref` them everywhere
+- **Runbooks written during an incident** — runbooks drafted under pressure are incomplete and inaccurate; write them during calm periods with a junior engineer as the target reader
+- **Documentation in a wiki separate from the code** — wikis go stale because they're not in the PR; docs that live alongside code get updated with the feature or the PR doesn't merge
+- **ADRs without the rejected alternatives** — a decision without context will be relitigated; always record what was considered and why each option was rejected
+- **Tech spec signed off by a single engineer** — one reviewer misses concerns from other domains; require sign-off from security, ops, and data disciplines for anything touching shared infrastructure
 
 ## Checklist
 

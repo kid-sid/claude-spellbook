@@ -1,6 +1,6 @@
 ---
 name: azure-service-bus
-description: Azure Service Bus patterns for Python covering DefaultAzureCredential auth, queues vs topics/subscriptions, send/receive with peek-lock, dead-letter queues, sessions for ordered processing, subscription filters, scheduled messages, and retry configuration.
+description: Use when implementing reliable message processing with Azure Service Bus — choosing between queues and topics, configuring peek-lock settlement, handling dead-lettered messages, or enforcing ordered processing with sessions.
 ---
 
 # Azure Service Bus
@@ -375,6 +375,16 @@ def safe_receive(receiver, handler, msg) -> None:
 | Duplicate detection window | Low | Enable on idempotent queues; deduplicated messages don't count toward throughput billing |
 
 > See also: `event-driven`, `azure`, `observability`
+
+## Red Flags
+
+- **Completing a message before the handler finishes** — settling with `complete_message()` before your handler returns means a crash loses the work with no retry opportunity; settle only after successful processing
+- **No monitoring on the dead-letter queue** — DLQ messages represent silently accumulating failures; set an alert on DLQ message count and review DLQ contents after every deployment
+- **Lock duration shorter than max processing time** — if the peek-lock expires before processing completes, the message becomes visible again and gets processed twice; set lock duration to 2–3× your p99 processing time
+- **Regular receiver used with session-enabled queues** — a standard `ServiceBusReceiver` ignores session grouping and violates ordering guarantees; use `accept_next_session()` for session-aware delivery
+- **Catch-all topic subscription with no filters** — a `TrueRuleFilter` subscription on a high-volume topic processes every message; use correlation or SQL filters to subscribe only to relevant message types
+- **`ServiceBusClient` recreated per message** — each client creation opens a new AMQP connection; create the client once at startup and reuse it across all sends and receives
+- **Abandoning messages immediately on transient errors** — abandoning re-enqueues the message for immediate retry, potentially creating a tight loop; use `defer()` or back off before abandoning on transient failures
 
 ## Checklist
 

@@ -1,6 +1,6 @@
 ---
 name: incident-response
-description: Incident response lifecycle: severity classification (P0–P4), triage checklist, communication templates (ack/update/resolution), mitigation decision tree, runbook structure, blameless postmortem template (5-Whys, action items), and MTTD/MTTR tracking.
+description: Use when triaging a production alert, writing a postmortem, creating or updating a runbook, classifying incident severity, or setting up on-call escalation paths.
 ---
 
 # Incident Response
@@ -250,6 +250,17 @@ Write the postmortem within 48 hours while details are fresh. **Blameless = focu
 Review these monthly per service. Rising MTTR = runbooks need updating. Repeat incidents = action items not implemented.
 
 > See also: `observability`, `deployment-strategies`
+
+## Red Flags
+
+- **Postmortem that names individuals as root cause** — "Alice deployed bad code" stops at the human rather than the system that allowed the bad code to reach production; blameless postmortems ask why the system made it possible
+- **Action items with no owner or no due date** — "Improve monitoring" as an action item is never done; every item must have a named owner and a specific due date to be tracked and closed
+- **Runbook that assumes the on-call engineer knows the service** — runbooks must include what "normal" looks like and copy-paste commands; a 3am engineer touching an unfamiliar service cannot safely improvise
+- **Rolling back immediately without checking if the rollback itself causes data loss** — rolling back a deploy that ran a destructive migration may orphan or corrupt rows that were written against the new schema
+- **Posting a P0 incident only in an engineering Slack channel** — stakeholders (product, support, leadership) need timely updates via their own channels; the Communicator role exists specifically to bridge this gap
+- **Severity P0 declared for every outage regardless of blast radius** — "P0" becomes meaningless if used for single-user bugs; a calibrated P0 ensures the right resources are mobilized and avoids on-call fatigue
+- **MTTD and MTTR tracked per-incident but never aggregated** — individual numbers without a monthly trend hide whether the team is improving; review rolling averages per service each month
+- **Closing an incident before a postmortem is scheduled** — if the postmortem is not scheduled at resolution time it rarely happens; require a postmortem date as a condition of closing any P0 or P1
 
 ## Checklist
 

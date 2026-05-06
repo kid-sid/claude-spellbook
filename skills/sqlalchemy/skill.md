@@ -1,6 +1,6 @@
 ---
 name: sqlalchemy
-description: Async SQLAlchemy 2.0 patterns covering DeclarativeBase, Mapped columns, relationships, async session management, queries (select/join/filter), transactions, CRUD patterns, connection pooling, and Alembic migrations (autogenerate, upgrade, data migrations).
+description: Use when using async SQLAlchemy 2.0 — defining models, writing queries, managing async sessions, loading relationships without N+1, or setting up and debugging Alembic migrations.
 ---
 
 # SQLAlchemy 2.0 — Async Patterns
@@ -372,6 +372,16 @@ class UserRepository:
 ```
 
 ---
+
+## Red Flags
+
+- **Old-style `Column()` declarations** — `Column(String, nullable=False)` without `Mapped[T]` loses the Python type information that mypy and editors rely on; use `Mapped[str] = mapped_column(String(255), nullable=False)` in all new SQLAlchemy 2.0 code
+- **Accessing relationships without explicit loading** — accessing `user.orders` in an async context without `selectinload` or `joinedload` raises `MissingGreenlet` or emits implicit lazy SQL that blocks the event loop; always declare the loading strategy in the query
+- **Creating a new `AsyncSession` per query** — instantiating a session for each database call bypasses connection pooling and transaction batching; create one session per request via the FastAPI dependency
+- **Missing `pool_pre_ping=True`** — without it, connections dropped by the database (idle timeout, network reset) are handed to the application as stale; the first query fails with a connection error rather than transparently reconnecting
+- **`expire_on_commit=False` missing** — by default SQLAlchemy expires all attributes after commit; accessing them in an async context after the session commits triggers lazy loads that fail; set `expire_on_commit=False` in `async_sessionmaker`
+- **Missing `index=True` on foreign key columns** — SQLAlchemy does not auto-index FK columns; every `JOIN` or filter on a FK without an index is a sequential scan
+- **ORM models imported in the domain layer** — importing `UserORM` in use cases or domain entities couples the business logic to the database schema; all ORM ↔ entity conversion belongs in the adapter layer
 
 ## Checklist
 

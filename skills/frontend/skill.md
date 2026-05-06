@@ -1,6 +1,6 @@
 ---
 name: frontend
-description: Frontend patterns covering React component design, state management (Zustand/Redux Toolkit/Context), data fetching (TanStack Query), forms (React Hook Form + Zod), routing, performance optimization, and testing.
+description: Use when designing React component structure, deciding where state should live, implementing data fetching with TanStack Query, building validated forms, or optimizing rendering performance.
 ---
 
 # Frontend Patterns
@@ -407,6 +407,16 @@ test("useCounter increments", () => {
 ```
 
 > See also: `unit-testing`, `accessibility`
+
+## Red Flags
+
+- **Data fetching inside `useEffect` without a library** — manual fetch-in-effect produces race conditions, missing loading/error states, and no deduplication; use TanStack Query or SWR
+- **Global state for server data** — storing server-fetched data in Redux/Zustand duplicates cache logic already solved by a data fetching library; keep server state in the fetching layer
+- **`key={index}` in lists** — using array index as key breaks React reconciliation when items reorder or are inserted; use a stable, unique ID from the data
+- **Uncontrolled forms for complex validation** — uncontrolled inputs with `ref` can't drive real-time validation or conditional fields; use React Hook Form with Zod schema validation
+- **`useEffect` to sync derived state** — computing derived values in an effect causes an extra render cycle; compute them inline during render or memoize with `useMemo`
+- **Prop drilling more than 2 levels** — passing props through 3+ components is a sign the tree needs restructuring or a context/selector; don't reach for global state before considering composition
+- **No `Suspense` boundary around lazy-loaded routes** — code-split routes without a fallback show a blank screen during load; wrap every lazy route in `<Suspense fallback={<Skeleton />}>`
 
 ## Checklist
 

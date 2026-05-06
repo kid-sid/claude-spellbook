@@ -1,6 +1,6 @@
 ---
 name: openai-agents
-description: OpenAI Agents SDK patterns covering Agent definition, tools (@function_tool), handoffs, Runner execution, streaming, tracing, context management, guardrails, and Agentex ADK integration (run_agent_streamed_auto_send). Use when building or debugging OpenAI agent workflows.
+description: Use when building or debugging OpenAI Agents SDK workflows — defining agents with tools and handoffs, wiring typed context, streaming responses, adding guardrails, or integrating with the Agentex ADK.
 ---
 
 # OpenAI Agents SDK Patterns
@@ -377,6 +377,16 @@ result = await Runner.run(
 | Context `None` in tool | Forgot to pass `context=` to Runner | Pass `context=your_context` in `Runner.run()` |
 
 ---
+
+## Red Flags
+
+- **No `max_turns` set** — without a turn limit an agent that calls a tool whose result triggers another tool call can loop indefinitely; always pass `RunConfig(max_turns=N)` to cap runaway execution
+- **Passing app state (DB session, user ID) through the LLM** — including session objects or sensitive IDs in the prompt or tool return values exposes them to the model and wastes tokens; use typed `context` (`RunContextWrapper`) so tools receive state without the LLM ever seeing it
+- **Vague tool docstrings** — the docstring is the only description the LLM sees; "Does stuff with the database" gives the model no signal on when to call it; write one sentence that says exactly what the tool returns and when to use it
+- **Vague handoff instructions in the triage agent** — "Route to the right agent" with no criteria leads to random or wrong handoffs; list the exact conditions for each handoff in the triage agent's instructions
+- **Using `Runner.run()` directly inside an Agentex activity** — `Runner.run()` doesn't stream tokens to the Agentex UI; use `adk.providers.openai.run_agent_streamed_auto_send()` which wraps `Runner.run_streamed()` and handles token delivery automatically
+- **No input/output guardrails on user-facing agents** — agents that handle user-supplied text without guardrails can be prompted to leak context, call wrong tools, or produce harmful output; add `@input_guardrail` and `@output_guardrail` for sensitive deployments
+- **Tool names that are long or vague** — the model uses the tool name as a primary signal; `search_the_web_for_current_information` is worse than `search_web`; keep tool names short, lowercase, and verb-noun
 
 ## Checklist
 

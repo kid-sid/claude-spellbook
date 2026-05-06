@@ -1,6 +1,6 @@
 ---
 name: claude-api
-description: Anthropic Claude API patterns for Python and TypeScript. Covers Messages API, streaming, tool use, vision, extended thinking, batches, prompt caching, and Claude Agent SDK. Use when building applications with the Claude API or Anthropic SDKs.
+description: Use when building or debugging apps that call the Claude API — implementing tool use, streaming, vision, prompt caching, batch processing, extended thinking, or an agentic loop with the Anthropic SDK.
 ---
 
 # Claude API
@@ -334,6 +334,17 @@ export ANTHROPIC_MODEL="claude-sonnet-4-0"
 ```
 
 Never hardcode API keys. Always use environment variables.
+
+## Red Flags
+
+- **Not setting `max_tokens` explicitly** — omitting it uses the SDK default which may be far too low for your use case, causing truncated responses with no error raised
+- **Using `client.messages.create()` in a tight loop without backoff** — hitting rate limits with immediate retries amplifies the problem; use the SDK's built-in retry config or `tenacity` with exponential backoff
+- **Passing raw user input directly as the user message** — prompt injection can redirect the model's behavior; sanitize or structure user input within a constrained template
+- **Enabling extended thinking (`budget_tokens`) without raising `max_tokens`** — thinking tokens count against `max_tokens`; a small `max_tokens` causes the request to error before the model produces output
+- **Polling the Batches API in a tight `while True` loop with `time.sleep(1)`** — batches can take minutes to hours; use `time.sleep(30)` at minimum, or a webhook/callback if available
+- **Caching the `Anthropic` client instance across forked processes** — the underlying httpx session is not fork-safe; instantiate a new client per process in multiprocessing scenarios
+- **Using an alias model ID (e.g., `claude-sonnet-4-0`) in production** — aliases can be remapped to a new model version without warning, changing behavior; pin to a dated snapshot ID for reproducible production behavior
+- **Logging the full request/response payload** — responses may echo back sensitive user data; log only metadata (model, token counts, stop reason), never message content
 
 ## Checklist
 

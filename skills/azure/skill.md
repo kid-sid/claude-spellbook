@@ -1,6 +1,6 @@
 ---
 name: azure
-description: Azure SDK patterns for Python covering authentication with DefaultAzureCredential, Blob Storage, AI Search (vector + hybrid), Document Intelligence, Key Vault secrets, Azure Functions, and cost controls.
+description: Use when writing Python code that integrates with Azure Blob Storage, AI Search, Document Intelligence, or Key Vault — or when configuring Managed Identity auth, designing a hybrid search index, or troubleshooting Azure SDK retry behavior.
 ---
 
 # Azure SDK
@@ -349,6 +349,16 @@ except HttpResponseError as e:
 | Document Intelligence | Medium | Use `prebuilt-read` (cheapest) unless you need tables or KV pairs |
 | Blob storage tier | Low-medium | `Hot` for active docs, `Cool` for archive; lifecycle policies auto-tier |
 | Vector dimensions | Medium | 1536 (ada-002) vs 3072 (text-embedding-3-large) — smaller = cheaper storage |
+
+## Red Flags
+
+- **Hardcoded connection strings or storage account keys** — keys can be leaked or rotated; always use `DefaultAzureCredential` with RBAC roles, never access keys or SAS tokens in code
+- **`DefaultAzureCredential` in production without pinning to `ManagedIdentityCredential`** — the credential chain tries 6+ sources sequentially; a misconfigured chain causes 30s+ startup failures; pin to `ManagedIdentityCredential` in prod
+- **SDK clients recreated per request** — SDK clients are designed to be long-lived and manage connection pools; recreating them per request exhausts connections and slows every call
+- **Uploading documents to AI Search one at a time** — single-document uploads are ~100× slower than batching; always use `upload_documents` in batches of up to 1000
+- **Text-only search for RAG queries** — semantic/vector-only search misses exact-match terms; use hybrid search (text + vector) with semantic re-ranking for best recall across diverse queries
+- **No retry policy on 429 or 503 responses** — Azure services throttle under load; wrap all SDK calls with `tenacity` or the Azure SDK's built-in retry configuration
+- **`ClientAuthenticationError` silently retried** — auth errors must fail fast and loudly; retrying authentication failures burns through retry budget and delays surfacing the real problem
 
 ## Checklist
 

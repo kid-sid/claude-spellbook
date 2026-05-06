@@ -1,6 +1,6 @@
 ---
 name: solution-testing
-description: End-to-end and acceptance testing: Playwright browser automation (page object model, locator strategy), API E2E flows, BDD with Gherkin/Cucumber, smoke tests for post-deployment verification, flakiness prevention, and CI integration.
+description: Use when writing Playwright E2E tests for critical user journeys, setting up post-deployment smoke tests, debugging flaky browser automation, or implementing BDD feature files with Gherkin.
 ---
 
 # Solution Testing
@@ -388,6 +388,16 @@ Key CI settings:
 - Set `CI=true` so Playwright applies `retries: 2` from config
 - Upload `playwright-report/` as artifact on failure for post-mortem debugging
 - Run smoke tests as a separate faster job on staging deploy; run full suite on PRs
+
+## Red Flags
+
+- **Locators by CSS class or generated attribute** — class names change during refactoring; use `getByRole`, `getByLabel`, or `data-testid` attributes that survive UI changes
+- **`waitForTimeout` as an explicit sleep** — arbitrary sleeps make tests slow and flaky; always wait on observable state (`waitForSelector`, `expect(locator).toBeVisible()`)
+- **One long E2E test that covers the entire user flow** — a 200-step test is slow, provides poor failure diagnosis, and fails for unrelated reasons; split into focused user-journey tests
+- **E2E tests run against a shared staging environment** — tests that create or delete shared state break other developers' work; use isolated per-run environments or UUID-suffixed test data
+- **Hardcoded test user credentials** — parallel CI runs create conflicts; generate unique test users per run or use an isolated test account per CI job
+- **No smoke test post-deployment** — a full E2E suite takes too long to run immediately after deploy; define a 2-minute smoke test of critical paths that runs on every deployment
+- **Quarantining flaky tests indefinitely** — flaky tests erode trust in the suite and mask real failures; quarantine with `test.fixme` and a tracking issue, fix within the same sprint
 
 ## Checklist
 

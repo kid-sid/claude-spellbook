@@ -1,6 +1,6 @@
 ---
 name: postgresql
-description: PostgreSQL patterns covering window functions, CTEs, JSONB queries, indexes (B-tree, GIN, partial, covering), EXPLAIN ANALYZE, transactions and locking, upsert, lateral joins, full-text search, and schema migration strategy. Use when writing complex queries, designing schemas, or diagnosing slow queries.
+description: Use when writing complex PostgreSQL queries, diagnosing slow queries with EXPLAIN ANALYZE, designing indexes, handling concurrent writes, or planning safe schema migrations on large tables.
 ---
 
 # PostgreSQL Patterns
@@ -437,6 +437,16 @@ gen_random_uuid()                 -- generate UUID v4 (pg 13+)
 ```
 
 ---
+
+## Red Flags
+
+- **Missing index on foreign key columns** — PostgreSQL does not auto-index FK columns; every `child(parent_id)` that appears in a `JOIN` or `WHERE` needs a manual `CREATE INDEX`, or every lookup is a sequential scan
+- **`CREATE INDEX` without `CONCURRENTLY` on a live table** — plain `CREATE INDEX` acquires a full table lock and blocks all writes for the duration; always use `CREATE INDEX CONCURRENTLY` in production migrations
+- **Single giant `UPDATE` to backfill a new column** — `UPDATE orders SET shipped_at = ...` on millions of rows locks the table and blocks production traffic; backfill in batches of 10–50k rows via a loop or pg_cron
+- **`EXPLAIN` without `ANALYZE` and `BUFFERS`** — `EXPLAIN` shows estimated costs only; `EXPLAIN (ANALYZE, BUFFERS)` shows actual row counts, actual time, and cache hit ratios — always use both flags when diagnosing performance
+- **`SELECT *` on large tables in joins** — selecting all columns brings unnecessary data from disk and prevents index-only scans; always project only the columns you need
+- **N+1 queries in application code** — fetching a list then querying for each row's related data in a loop is O(n) round trips; use a single `JOIN` or a single `IN` query with application-side grouping
+- **`NOT IN` with a subquery that can return NULLs** — if the subquery returns any `NULL`, `NOT IN` returns no rows at all due to three-valued logic; use `NOT EXISTS` or `LEFT JOIN ... WHERE right.id IS NULL` instead
 
 ## Checklist
 

@@ -1,6 +1,6 @@
 ---
 name: ai-engineer
-description: Production LLM application patterns covering RAG pipelines, vector search, agent orchestration, prompt engineering, multimodal AI, cost optimization, and AI safety for Python and TypeScript.
+description: Use when building production LLM applications — designing RAG pipelines, choosing vector databases, implementing agent orchestration, optimizing cost, or adding AI safety guardrails.
 ---
 
 # AI Engineering
@@ -414,6 +414,16 @@ dataset = Dataset.from_dict({
 })
 scores = evaluate(dataset, metrics=[faithfulness, answer_relevancy, context_precision])
 ```
+
+## Red Flags
+
+- **RAG without evaluating retrieval quality** — high embedding similarity doesn't mean the retrieved chunks answer the question; evaluate retrieval precision/recall separately from generation quality
+- **Chunk size chosen arbitrarily** — too large floods context with irrelevant content, too small loses coherence; benchmark chunk sizes against real queries before committing
+- **No evals before deploying prompt changes** — changing a prompt in production without a regression suite is the AI equivalent of deploying untested code; build evals first
+- **Unlimited agent loops** — an agent without a max-turn ceiling can loop indefinitely on ambiguous tasks; always set a hard limit and define graceful stopping behavior
+- **User-provided text injected directly into system prompts** — prompt injection via user content can override instructions; sanitize input and keep it in the `user` message role, never the `system` role
+- **Cost estimation deferred until after launch** — LLM costs scale with tokens × requests; estimate per-request cost at the architecture stage, not post-launch when it's too expensive to change
+- **Single embedding model for all content types** — code, prose, and tables have different semantic spaces; benchmark domain-appropriate models or separate indexes per content type
 
 ## Checklist
 

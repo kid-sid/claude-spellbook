@@ -1,6 +1,6 @@
 ---
 name: event-driven
-description: Event-driven architecture patterns covering Kafka producer/consumer design, topic partitioning, consumer groups, event schema versioning, outbox pattern, dead-letter queues, idempotency, and event sourcing for Python, TypeScript, and Go.
+description: Use when designing or debugging an event-driven system — choosing Kafka partitioning strategies, implementing the outbox pattern, handling dead-letter queues, ensuring idempotent consumers, or making event sourcing decisions.
 ---
 
 # Event-Driven Architecture Patterns
@@ -374,6 +374,16 @@ def replay(events: list[dict]) -> Order:
 | Temporal queries ("state at time T") | Simple, low-volume domain |
 
 > See also: `microservices`, `observability`
+
+## Red Flags
+
+- **Kafka consumer without idempotency** — at-least-once delivery means the same message can arrive twice; design consumers to be idempotent before assuming exactly-once semantics
+- **Hot partition from a low-cardinality key** — using `event_type` as the partition key routes all messages of one type to one partition; choose a high-cardinality key like `entity_id` for even distribution
+- **No dead-letter queue for unprocessable messages** — a consumer that throws on a bad message blocks all subsequent messages on that partition; route poison messages to a DLQ immediately
+- **Outbox table without a reliable poller** — writing to the outbox without a dedicated transactional poller means events may silently never be published; the poller is half the pattern
+- **Schema changes without versioning** — adding a required field to an event schema breaks all existing consumers silently; always version events and maintain backward compatibility
+- **Synchronous HTTP calls inside a consumer handler** — an upstream timeout blocks the consumer and grows partition lag; use async clients or pre-fetch data outside the consumer loop
+- **Resetting offsets to earliest on every consumer restart** — without committed offsets, a restarted consumer reprocesses all historical events; commit offsets after processing and handle replay explicitly
 
 ## Checklist
 

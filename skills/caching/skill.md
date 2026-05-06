@@ -1,6 +1,6 @@
 ---
 name: caching
-description: Caching patterns covering Redis data structures, cache-aside/write-through/write-behind strategies, TTL design, cache stampede prevention, CDN caching, HTTP cache headers, invalidation strategies, and distributed cache pitfalls for Python, TypeScript, and Go.
+description: Use when adding or debugging caching in a service — choosing a cache strategy, designing TTLs, preventing stampedes, reasoning about invalidation, or configuring HTTP Cache-Control headers.
 ---
 
 # Caching Patterns
@@ -357,6 +357,16 @@ Solution: use Redis Sentinel or Cluster; never rely on single-node without repli
 ```
 
 > See also: `performance`, `database-design`, `api-design`
+
+## Red Flags
+
+- **Cache stampede on simultaneous key expiry** — all requests hit the DB at once when a hot key expires; use probabilistic early expiry, a distributed lock, or staggered TTLs to prevent the pile-on
+- **No TTL on cached values** — keys accumulate indefinitely and consume memory; every cached value must have an expiry unless explicitly justified as permanent
+- **Missing ownership context in cache keys** — a key without tenant or user ID can serve one user's data to another; always include the ownership scope in every cache key
+- **Write-through without invalidating on write failure** — a failed DB write while the cache shows success creates a stale-read window; invalidate the cache key on any write failure
+- **In-process LRU cache in a multi-worker service** — forked workers maintain separate memory; a cache write in one worker is invisible to others; use Redis for cross-process sharing
+- **`Cache-Control: no-store` on versioned static assets** — disabling caching on content-hashed JS/CSS/images forces a full download on every page load; use `max-age=31536000, immutable` for versioned assets
+- **Caching at the wrong layer** — caching computed aggregates that are rarely requested wastes memory; cache at the layer closest to the hot query, and measure hit rates before adding any new cache
 
 ## Checklist
 

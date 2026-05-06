@@ -1,6 +1,6 @@
 ---
 name: coding-standards
-description: "Code quality standards: naming conventions per language (Python/TypeScript/Go), SOLID principles with examples, design patterns quick reference (12 patterns, full code for Factory/Strategy/Observer/Repository), code smell catalog with refactoring directions, and language-specific idioms."
+description: "Use when reviewing code for quality, naming a class or function, choosing a design pattern, refactoring a code smell, or establishing coding conventions for a new project."
 ---
 
 # Coding Standards
@@ -441,6 +441,17 @@ func TestAdd(t *testing.T) {
 ```
 
 ---
+
+## Red Flags
+
+- **God class with `Manager`, `Helper`, or `Utils` suffix** — a class named `UserManager` with 15 methods is a single-responsibility violation waiting to be split; name by what it does, not that it manages things
+- **Boolean parameter flags controlling fundamentally different code paths** — `send_email(user, urgent=True)` means two functions in disguise; split into `send_urgent_email` and `send_email` with distinct call sites
+- **Deep inheritance hierarchies (more than 2 levels)** — subclasses become entangled with grandparent internals; prefer composition and interfaces, using inheritance only for true IS-A relationships
+- **Returning `None` on error instead of raising an exception or returning a typed Result** — callers silently ignore `None` and propagate nulls deep into the call stack before crashing; be explicit about failure
+- **Catching a broad exception to log-and-swallow** — `except Exception: logger.error(...)` hides failures silently; catch the specific exception type and let unexpected ones propagate
+- **`any` type in TypeScript at a module boundary** — `any` disables type checking for every caller downstream; use `unknown` and narrow explicitly, or define a proper interface
+- **Mutable default arguments in Python** — `def process(items=[])` shares the same list across all calls; use `def process(items=None)` and initialize inside the function body
+- **Long positional argument lists (more than 3 parameters)** — hard to read at call sites and easy to transpose; introduce a parameter object or dataclass
 
 ## Checklist
 

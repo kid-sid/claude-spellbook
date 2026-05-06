@@ -1,6 +1,6 @@
 ---
 name: security
-description: "Application security: OWASP Top 10 mitigations, JWT and OAuth2/OIDC authentication patterns, RBAC/ABAC authorization, secrets management (env vars to Vault), input validation and injection prevention, security headers, STRIDE threat modeling, and dependency scanning for Python, TypeScript, and Go."
+description: Use when implementing authentication, authorization, input validation, or secrets management — or when auditing an existing service against OWASP Top 10 risks, configuring security headers, or running a STRIDE threat model.
 ---
 
 # Security
@@ -621,6 +621,16 @@ npx @cyclonedx/cyclonedx-npm --output-file sbom.json
 go install github.com/CycloneDX/cyclonedx-gomod/cmd/cyclonedx-gomod@latest
 cyclonedx-gomod app -output sbom.json
 ```
+
+## Red Flags
+
+- **JWT validated on signature only, not expiry or audience** — a valid signature on an expired or wrong-audience token still passes; always check `exp`, `nbf`, and `aud` claims
+- **RBAC without object-level ownership check** — checking role but not resource ownership lets any `admin`-role user access other users' data; always verify `resource.owner_id == current_user.id`
+- **Input validation inside business logic** — validate at the request boundary (controller/handler); by the time data reaches domain logic it should already be trusted and clean
+- **STRIDE skipped for "small" features** — new auth paths, file uploads, and webhooks introduce entire attack classes; STRIDE at design time costs minutes, post-incident costs days
+- **Dependency scanning only at release** — new CVEs are published daily; run dep scanning on every PR and on a nightly schedule against the default branch
+- **Cookie flags missing on session tokens** — without `HttpOnly`, `Secure`, and `SameSite=Strict`, session cookies are vulnerable to XSS theft and CSRF; set all three
+- **Auth middleware applied to route groups but not verified per handler** — a misconfigured route group silently bypasses middleware; verify auth and ownership explicitly in each sensitive handler
 
 ## Checklist
 

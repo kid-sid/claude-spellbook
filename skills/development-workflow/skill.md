@@ -1,6 +1,6 @@
 ---
 name: development-workflow
-description: Git branching strategies (GitHub Flow, Git Flow, trunk-based), conventional commits spec, PR workflow and description templates, code review practices (giving and receiving feedback), and release tagging with semantic versioning.
+description: Use when choosing a branching strategy, writing a commit message, opening or reviewing a pull request, setting up commit linting, or tagging a versioned release.
 ---
 
 # Development Workflow
@@ -294,6 +294,17 @@ Maintain a `CHANGELOG.md` in [Keep a Changelog](https://keepachangelog.com) form
 | `semantic-release` | Fully automated — reads commits, bumps version, publishes, creates GitHub release | Zero-touch; requires strict Conventional Commits discipline |
 | `release-please` (Google) | Creates a "Release PR" with changelog and version bump; engineer merges to ship | Semi-automated; good for teams that want a human gate before release |
 | `standard-version` (deprecated) | Local CLI, generates changelog and tag | Superseded by `release-please` / `semantic-release` |
+
+## Red Flags
+
+- **Long-lived feature branches (more than a week)** — diverging from `main` for days accumulates merge conflicts and delays integration feedback; split the work into smaller increments or use feature flags
+- **Commit messages in past tense or with no type prefix** — "Fixed the login bug" makes automated changelog generation and `git bisect` harder; use the imperative form with a Conventional Commits type: `fix(auth): guard against null session token`
+- **PR with 1,000+ LOC that mixes refactoring and feature work** — reviewers cannot reason about two concerns simultaneously; split into a refactoring PR (no behavior change) and a feature PR on top
+- **Force-pushing to a shared branch** — rewriting history that colleagues have already pulled causes divergent histories and lost commits; never force-push to `main` or a shared branch; use a new commit to amend
+- **Squash-merging without updating the PR description** — the squash commit message defaults to the PR title only; the description (Why, How) is lost from git history where it would be most valuable for `git log`
+- **Merging without a required CI green check** — bypassing status checks to "unblock" is the single most common source of regressions on `main`; enforce required status checks in branch protection settings
+- **Using lightweight tags for releases instead of annotated tags** — lightweight tags have no author, date, or message; `git tag -a v1.2.3 -m "..."` is required for `git describe` and release tooling to work correctly
+- **No `CHANGELOG.md` entry on release** — a tag with no changelog forces the next developer to read raw `git log` to understand what changed; automate with `semantic-release` or `release-please`
 
 ## Checklist
 

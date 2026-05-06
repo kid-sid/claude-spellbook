@@ -1,6 +1,6 @@
 ---
 name: agentex
-description: Agentex platform patterns — agent types (sync/async/temporal), ACP protocol, local development on Windows, architecture, and common gotchas.
+description: Use when building, wiring, or debugging an Agentex agent — choosing agent type, configuring acp.py and manifest.yaml, using adk.messages or adk.state, or resolving Windows-specific setup issues.
 ---
 
 # Agentex Platform
@@ -215,6 +215,16 @@ cd agentex
 ```
 
 ---
+
+## Red Flags
+
+- **Sync ACP for multi-turn conversations** — sync agents receive one message and return one reply; they have no state, no turn history, and no mechanism to stream responses; use async ACP (or async + Temporal) for any stateful interaction
+- **Handler decorators in `acp.py` for a Temporal agent** — Temporal agents route all ACP events through the workflow engine; registering `@acp.on_task_create` decorators in `acp.py` bypasses Temporal and runs handlers outside the durable execution context
+- **Returning a response from an async handler instead of using `adk.messages.create`** — async agent handlers are not expected to return a value; the return value is silently discarded and the user sees no reply; push responses explicitly via `adk.messages.create`
+- **Not following load → mutate → save with `adk.state`** — reading state, mutating it in-memory, and then returning without saving means the next signal handler loads stale state; always call `adk.state.update` after every mutation before returning
+- **Omitting `get_all_activities()` in `run_worker.py`** — ADK built-in activities (messages, state persistence, tracing) are registered via `get_all_activities()`; omitting it means all `adk.messages.create` and `adk.state.*` calls fail at runtime with "activity not found"
+- **Two agents sharing the same port in `manifest.yaml`** — each ACP server process binds a port; running two agents with the same `local_development.agent.port` causes one to fail to start; increment the port for each agent (8000, 8001, 8002, …)
+- **`load_dotenv(override=True)` when running inside Docker** — overriding with the local `.env` file replaces Docker-injected environment variables such as `DATABASE_URL` and `TEMPORAL_ADDRESS` with localhost values, breaking service discovery inside the container network
 
 ## Checklist
 

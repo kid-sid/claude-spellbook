@@ -1,6 +1,6 @@
 ---
 name: accessibility
-description: Web accessibility patterns covering WCAG 2.1/2.2 conformance, ARIA roles, keyboard navigation, focus management, color contrast, semantic HTML, and screen reader compatibility for inclusive UI development.
+description: Use when building or reviewing UI components for keyboard and screen reader compatibility, adding ARIA to custom widgets, auditing a page for WCAG AA conformance, or preparing for a formal accessibility review.
 ---
 
 # Accessibility
@@ -344,6 +344,16 @@ npx contrast-ratio "#595959" "#ffffff"
 
 # Or use browser DevTools: Accessibility panel → Contrast ratio
 ```
+
+## Red Flags
+
+- **`aria-label` on every element** — ARIA overrides native semantics; use semantic HTML first and add ARIA only when native elements can't express the required role or state
+- **`role="button"` on a `<div>` or `<span>`** — custom button roles require manually implementing keyboard behavior; use `<button>` and get focus, Enter, and Space for free
+- **`alt=""` on informational images** — empty alt hides the image from screen readers entirely; empty alt is only correct for purely decorative images that convey no content
+- **`placeholder` as the only label** — placeholder text disappears on focus and has insufficient contrast ratio; every input must have an associated visible `<label>` element
+- **`outline: none` without a visible replacement** — removing the default focus ring makes keyboard navigation invisible; always provide a visible focus indicator that meets 3:1 contrast
+- **Automated scan as the complete accessibility test** — axe/pa11y catches ~30% of WCAG issues; focus order, reading order, and screen reader announcements require manual verification
+- **Modal that doesn't trap focus** — focus that escapes an open modal to background content disorients screen reader users; implement a focus trap and return focus to the trigger element on close
 
 ## Checklist
 

@@ -1,6 +1,6 @@
 ---
 name: react
-description: Advanced React patterns — hooks deep dive, custom hooks, compound components, context design, error boundaries, Suspense, concurrent features, Next.js App Router (Server Components, Server Actions), and TypeScript with React. Complements the frontend skill which covers state management, data fetching, forms, routing, and testing.
+description: Use when building advanced React features — designing custom hooks, using Suspense or error boundaries, working in Next.js App Router with Server Components or Server Actions, or applying TypeScript generics and concurrent mode APIs.
 ---
 
 # React — Advanced Patterns
@@ -497,6 +497,16 @@ fetch(url);                                // default: cached (SSG)
 | Server Component importing Client Component that imports server-only code | Use `server-only` package or restructure imports |
 
 ---
+
+## Red Flags
+
+- **`useEffect` with empty `[]` deps that closes over changing values** — an empty dep array on an effect that references props or state silently uses stale data on re-render; add correct deps or use a ref
+- **Large context that re-renders all consumers on any state change** — a monolithic context causes every consumer to re-render on every value change; split by update frequency or use a selector
+- **Derived state stored in `useState`** — state computable from props or other state causes stale value bugs; compute it inline during render or memoize with `useMemo`
+- **`React.memo` applied everywhere as a premature optimization** — wrapping every component in `memo` adds comparison overhead without benefit when props change every render; profile first, memoize surgically
+- **`forwardRef` + `useImperativeHandle` for parent-to-child communication** — exposing an imperative handle inverts the data flow; prefer lifting state, callbacks, or composition
+- **Server Component fetching data that's also fetched by its Client Component child** — data fetched in a Server Component passed as props then re-fetched in the Client Component causes duplicate requests; pick one fetch location
+- **`<Suspense>` without an `<ErrorBoundary>`** — a thrown error in a suspended or lazy component without an error boundary crashes the entire tree; wrap every `<Suspense>` with an `<ErrorBoundary>`
 
 ## Checklist
 

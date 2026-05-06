@@ -1,6 +1,6 @@
 ---
 name: typescript
-description: Advanced TypeScript patterns — utility types, conditional types, mapped types, template literal types, generics, discriminated unions, type narrowing, satisfies operator, declaration merging, module augmentation, and common compiler config. Language-level patterns applicable across React, Node, and Angular.
+description: Use when writing advanced TypeScript — creating utility types, narrowing unions, resolving tricky type errors, configuring the compiler for strict mode, building branded types, or augmenting third-party module types.
 ---
 
 # TypeScript — Advanced Type Patterns
@@ -454,6 +454,16 @@ type Route = (typeof ROUTES)[keyof typeof ROUTES];
 ```
 
 ---
+
+## Red Flags
+
+- **`any` instead of `unknown` for external data** — `any` disables all type checking on a value and everything it touches; use `unknown` for data of uncertain shape and narrow it with type guards before use
+- **Type assertions (`as`) instead of type guards** — `value as User` tells the compiler to trust you without verification; if the shape is wrong at runtime, you get silent data corruption rather than a type error; use `isUser(value)` type guards
+- **`// @ts-ignore` or `// @ts-expect-error` as a long-term fix** — suppression comments hide real type problems; investigate the root cause and fix the types or the code
+- **`strict: false` in tsconfig** — without strict mode, `null` and `undefined` escape into typed values silently; enable `strict: true` from project start; retrofitting it later costs weeks
+- **Missing exhaustive check in `switch`/`match`** — a switch over a union without an `assertNever` default compiles successfully when a new union member is added, silently falling through; always add `assertNever(x)` in the default case
+- **`noUncheckedIndexedAccess` disabled** — `arr[i]` returns `T` instead of `T | undefined`, hiding off-by-one errors; enable this flag and handle the `undefined` case explicitly
+- **Widening an inferred type with an explicit annotation** — `const routes: string[] = ["/home", "/users"]` loses the literal types; use `as const` or `satisfies` to preserve precision while still validating the shape
 
 ## Checklist
 

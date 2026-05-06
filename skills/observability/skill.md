@@ -1,6 +1,6 @@
 ---
 name: observability
-description: "Observability stack: structured logging with correlation IDs (structlog/pino/slog), Prometheus metrics (counters, histograms, RED/USE methods), OpenTelemetry distributed tracing (spans, context propagation, sampling), alerting rule design, SLO/SLI/error budgets, and Grafana golden signals dashboards."
+description: "Use when adding structured logging, instrumenting Prometheus metrics, wiring up distributed tracing with OpenTelemetry, writing alerting rules, defining SLOs and error budgets, or building a Grafana golden-signals dashboard."
 ---
 
 # Observability
@@ -635,6 +635,17 @@ Every service should have a single dashboard with at minimum four panels, one pe
 - Pin the error budget remaining as a Stat panel at the top of every service dashboard
 
 ---
+
+## Red Flags
+
+- **High-cardinality label in a Prometheus metric** — adding `user_id`, `order_id`, or an un-normalized URL path as a label creates millions of time series and can crash Prometheus under memory pressure; only use low-cardinality labels
+- **Alerting on CPU or memory utilization as a primary signal** — CPU at 80% may have zero user impact while a queue backlog at 10% causes data loss; alert on symptoms (error rate, latency) and use resource metrics only for capacity forecasting
+- **Alert with no `for:` duration** — an alert that fires on the first data point trips on transient 1-second spikes; always add `for: 5m` or similar to require the condition to be sustained before paging
+- **Logging at DEBUG level in production** — debug logs from a high-traffic service generate gigabytes per hour, burying actionable signals and inflating log storage costs; configure LOG_LEVEL=INFO in production
+- **Generating a new `request_id` at each service hop** — if each service creates its own ID, you cannot correlate log lines across service boundaries; generate once at the edge and propagate via `X-Request-ID` or the W3C `traceparent` header
+- **Using `Summary` instead of `Histogram` for latency metrics** — summaries calculate quantiles client-side and cannot be aggregated across multiple instances in PromQL; histograms aggregate correctly across replicas
+- **SLO defined as "99.9% uptime" without specifying the SLI or success criterion** — "uptime" is ambiguous; a well-formed SLO specifies the SLI (fraction of HTTP 2xx responses), the target (99.9%), and the window (rolling 30 days)
+- **Span attributes containing PII (email, card number, user name)** — trace data is often forwarded to third-party backends (Datadog, Honeycomb) with relaxed data retention; scrub or hash sensitive fields before attaching them to spans
 
 ## Checklist
 

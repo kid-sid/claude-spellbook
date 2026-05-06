@@ -1,6 +1,6 @@
 ---
 name: test-strategy
-description: "Test strategy design: testing model selection (Pyramid vs Trophy vs Honeycomb), coverage target setting by codebase type, shift-left testing techniques (linting/types/contracts as tests), non-functional test types (load/stress/soak/a11y/security), and test plan templates."
+description: Use when choosing a testing model for a new project, auditing a test suite that is slow or provides low confidence, setting coverage targets, or writing a QA test plan for a release.
 ---
 
 # Test Strategy
@@ -276,6 +276,16 @@ What is being tested:
 ```
 
 > See also: `unit-testing`, `integration-testing`, `solution-testing`, `performance-testing`
+
+## Red Flags
+
+- **Applying the test pyramid without considering system architecture** — the pyramid assumes cheap unit tests; for integration-heavy microservices or event-driven systems, the Honeycomb model often fits better
+- **Coverage percentage as the primary quality metric** — 90% line coverage can coexist with zero behavior coverage if tests assert on implementation rather than outcomes; track branch coverage and mutation scores
+- **E2E tests for edge cases and error paths** — edge cases should live in unit or integration tests; E2E tests should cover critical user journeys only, not every conditional branch
+- **Consumer-driven contract tests treated as optional** — for service-to-service dependencies, a broken contract is a production outage; Pact catches this class of failure in CI before it ships
+- **Load and security tests planned for "after launch"** — non-functional tests deferred post-launch are perpetually skipped; include them in the Definition of Done for every API feature
+- **No test plan before a major release** — releases without a test plan have undefined risk; write a one-page plan listing scenarios, owners, and pass/fail criteria before any major release
+- **Shared mutable test state across the suite** — a test that leaves the database dirty causes cascading failures in subsequent tests; treat test isolation as a first-class constraint
 
 ## Checklist
 

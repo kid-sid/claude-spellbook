@@ -1,6 +1,6 @@
 ---
 name: performance-testing
-description: Performance and load testing: test type selection (load/stress/soak/spike/volume), k6 script patterns (stages, thresholds, scenarios), Locust HttpUser task weighting, Go benchmark functions with benchstat, SLO-based pass/fail criteria, bottleneck identification, and CI integration.
+description: Use when load testing a service before launch or after a significant traffic change — writing k6 or Locust scripts, setting SLO-based pass/fail thresholds, diagnosing bottlenecks under load, or integrating performance tests into CI.
 ---
 
 # Performance Testing
@@ -279,6 +279,16 @@ jobs:
 ```
 
 > See also: `performance`, `observability`, `ci-cd`
+
+## Red Flags
+
+- **Symmetric ramp-up/ramp-down without a sustained plateau** — spike-then-ramp-down misses memory leaks and GC pressure; hold at target RPS for ≥10 min in steady state
+- **Asserting only on HTTP 200** — a cached error page or open circuit breaker returns 200; use `check()` to assert on specific response body fields, not just the status code
+- **Single load generator machine for high VU counts** — one machine saturates its NIC before the target; use distributed execution (k6 cloud, multiple Locust workers) above ~500 VUs
+- **No baseline before the test** — without a pre-change baseline you can't tell whether 300ms p99 is a regression or always was that way
+- **Load test traffic escaping into production** — test traffic that bypasses rate limits can trigger real customer alerts; isolate by dedicated API key, IP allowlist, or a separate environment
+- **Zero think time between requests** — real users pause between actions; 0ms think time inflates effective concurrency 5–10×, producing false bottlenecks that don't exist in production
+- **Setting SLO thresholds from the first test run** — first-run numbers are noisy; run 3+ tests under stable conditions before codifying a regression threshold
 
 ## Checklist
 

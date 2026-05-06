@@ -1,6 +1,6 @@
 ---
 name: langgraph
-description: LangGraph patterns covering StateGraph construction, nodes, edges, conditional routing, checkpointers for persistence, streaming, human-in-the-loop interrupts, subgraphs, tool calling, and multi-agent coordination. Use when building or debugging LangGraph workflows.
+description: Use when building or debugging LangGraph workflows — designing state graphs, adding conditional routing, wiring checkpointers, streaming tokens, implementing human-in-the-loop interrupts, or coordinating multi-agent subgraphs.
 ---
 
 # LangGraph Patterns
@@ -399,6 +399,17 @@ graph.invoke(None, config={**config, "checkpoint_id": old_checkpoint_id})
 | `add_messages` duplicating | Returning same message ID twice | Return new messages only; don't re-include history |
 
 ---
+
+## Red Flags
+
+- **Returning full state from a node** — returning the entire state dict instead of a partial update overwrites all fields and breaks reducers; nodes must return only the keys they changed
+- **Cycles with no exit condition** — a loop between two nodes with no conditional edge to `END` causes `GraphRecursionError`; always add a conditional edge that can reach `END`
+- **`MemorySaver` in production** — in-process memory is lost on worker restart; use `PostgresSaver` (or another persistent backend) for any deployed graph
+- **Non-deterministic code in node functions** — calling `time.time()`, `random`, or direct HTTP requests inside nodes makes replay unpredictable in LangGraph Cloud and Temporal-hosted graphs; use activity patterns for side effects
+- **Missing `thread_id` or reusing it across unrelated sessions** — reusing a `thread_id` continues an old conversation; always generate a unique ID per session and pass it in the config's `configurable` dict
+- **Human-in-the-loop without a checkpointer** — `interrupt()` silently does nothing if the graph was compiled without a checkpointer; interrupts require `checkpointer=` in `.compile()`
+- **Accessing relationship fields across incompatible subgraph state types** — parent and subgraph states must have compatible shapes; passing keys the subgraph doesn't declare in its `TypedDict` causes `InvalidUpdateError`
+- **`add_messages` on a field that isn't a message list** — annotating a plain list of strings with `add_messages` deduplicates by message ID and discards entries without one; use `operator.add` for plain list fields
 
 ## Checklist
 

@@ -1,6 +1,6 @@
 ---
 name: containerization
-description: "Docker and Kubernetes patterns: multi-stage Dockerfiles for Python/Node/Go, image optimization, docker-compose for local dev, Kubernetes core resources (Deployment, Service, Ingress, ConfigMap, Secret, HPA), Helm basics, security context, and resource requests/limits."
+description: "Use when writing Dockerfiles, setting up docker-compose for local dev, configuring Kubernetes resources (Deployment, Service, Ingress, HPA), sizing pod resource limits, or packaging a service with Helm."
 ---
 
 # Containerization
@@ -532,6 +532,17 @@ volumes:
 ```
 
 > See also: `ci-cd`, `deployment-strategies`, `security`
+
+## Red Flags
+
+- **Running the container process as root** — a process breakout inside the container inherits root on the host; always set `USER 1000:1000` (or `USER node`) in the final Dockerfile stage
+- **Copying the entire build context before installing dependencies** — `COPY . .` before `RUN npm ci` busts the layer cache on every source change, making every build a full cold install
+- **Using `latest` tag in Kubernetes manifests** — `imagePullPolicy: Always` with `latest` means different nodes may pull different images across a rolling deploy; pin to a commit SHA or versioned tag
+- **Setting `limits.memory` equal to `requests.memory` with no headroom** — a JVM or Python GC spike briefly exceeds the request value; without headroom the pod is OOMKilled and restarted during normal operation
+- **Liveness probe with low `failureThreshold` (1–2) and short `periodSeconds` (5–10)** — a slow GC pause or cold DB query triggers an unnecessary pod restart loop; use `failureThreshold: 3` and `periodSeconds: 30` as a baseline
+- **Storing Kubernetes Secrets as plain base64 in git** — base64 is not encryption; use Sealed Secrets or external-secrets-operator so plaintext values never enter version control
+- **No `.dockerignore`** — the full build context (including `.git`, `node_modules`, `.env`) is sent to the Docker daemon on every build, leaking secrets and adding seconds of unnecessary transfer
+- **HPA configured without CPU `requests` set** — HPA calculates utilization as `actual / request`; a missing request means the denominator is undefined and the autoscaler cannot make scaling decisions
 
 ## Checklist
 

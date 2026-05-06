@@ -1,6 +1,6 @@
 ---
 name: microservices
-description: Microservices architecture patterns covering service decomposition, inter-service communication (sync/async), resilience (circuit breaker, saga, bulkhead), data isolation, API gateway, and service mesh for distributed backend systems.
+description: Use when decomposing a monolith, designing inter-service communication, implementing circuit breakers or sagas, reasoning about data ownership across services, or setting up an API gateway for a distributed system.
 ---
 
 # Microservices Patterns
@@ -358,6 +358,17 @@ def place_order(order_data: dict, headers: dict):
 ```
 
 > See also: `observability`
+
+## Red Flags
+
+- **Services sharing a database** — two services reading and writing the same table are coupled at the schema level; a migration needed by one service blocks or breaks the other, defeating the purpose of independent deployment
+- **Synchronous HTTP chain more than 2 hops deep** — a request that fans out through 5 services compounds each service's p99 latency multiplicatively; use async messaging for workflows that do not need an immediate response
+- **No timeout on inter-service HTTP calls** — an unresponsive downstream service holds goroutines/threads until the connection pool is exhausted, cascading the failure to every caller upstream
+- **Saga with no compensating transaction defined** — a choreography saga that publishes `order.created` without a `cancel_order` compensation path leaves partial state (charged payment, no order) when any downstream step fails
+- **Consumer reading directly from the producer's database** — bypassing the API to read raw DB rows creates an undocumented cross-service coupling; any schema change in the producer silently breaks the consumer
+- **gRPC without deadline propagation** — calling a downstream gRPC service without passing the parent context deadline means the downstream call ignores the caller's timeout and can outlive the client connection
+- **Circuit breaker with the same threshold for all dependencies** — a cache (millisecond latency, 99.99% uptime) and a fraud-check API (200ms, 99.9% uptime) need different `fail_max` and `reset_timeout` values; one-size config causes false trips on critical paths
+- **Event consumer processing messages synchronously within `eachMessage`** — blocking the consumer callback blocks partition consumption; use async handlers and commit offsets only after successful processing to avoid message loss
 
 ## Checklist
 

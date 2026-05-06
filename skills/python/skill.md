@@ -1,6 +1,6 @@
 ---
 name: python
-description: Advanced Python patterns — type hints and protocols, dataclasses vs Pydantic, async/await pitfalls, context managers, decorators, generators, itertools/functools, structural pattern matching, slots, and common gotchas. Language-level patterns applicable across frameworks.
+description: Use when writing or debugging non-trivial Python — async pitfalls, type system patterns, dataclass vs Pydantic decisions, decorator design, generator efficiency, or language-specific idioms like structural pattern matching and slots.
 ---
 
 # Python — Advanced Patterns
@@ -472,6 +472,16 @@ print(f"{x=}")  # prints: x=42
 | `asyncio.gather` | Independent async calls — run concurrently |
 
 ---
+
+## Red Flags
+
+- **Mutable default arguments** (`def f(items=[])`) — the default list is created once at definition time and shared across all calls; use `None` as the default and initialize inside the function body
+- **Bare `except:` or `except Exception:`** — catching all exceptions hides bugs and swallows `KeyboardInterrupt`; catch the narrowest specific exception type you actually expect and handle
+- **`asyncio.run()` inside an already-running event loop** — calling `asyncio.run()` from within an async context (FastAPI, Jupyter) raises `RuntimeError`; use `await` directly or `loop.run_until_complete()`
+- **Threads for CPU-bound work** — Python's GIL prevents true thread parallelism for CPU tasks; use `multiprocessing` or `ProcessPoolExecutor` for CPU-bound parallelism
+- **`from module import *` in `__init__.py`** — star imports pollute the namespace and make name origins untraceable; always import explicitly
+- **`@dataclass` fields with mutable defaults** — `field: list = []` shares the same list object across all instances; use `field(default_factory=list)` for mutable defaults
+- **`is` to compare values** — `x is 1` or `x is "hello"` relies on CPython interning that is not guaranteed across Python versions; use `==` for value comparison and `is` only for `None`, `True`, `False`
 
 ## Checklist
 

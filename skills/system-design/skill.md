@@ -1,6 +1,6 @@
 ---
 name: system-design
-description: "System design: structured design process (clarify→estimate→API→data model→components→bottlenecks), capacity estimation, HLD component patterns, low-level design with sequence diagrams, ADR templates, technology selection matrices, scalability patterns (CQRS, sharding, read replicas), and reliability patterns (circuit breaker, retry, bulkhead)."
+description: Use when designing a new service from scratch, writing a tech spec or RFC, selecting a database or communication pattern, estimating capacity, or reviewing a design for scalability and reliability gaps.
 ---
 
 # System Design
@@ -561,6 +561,16 @@ Always set explicit timeouts at every layer. Never rely on defaults — most fra
 **Timeout budget rule:** The sum of downstream timeouts in a synchronous call chain must be less than the upstream timeout. If service A calls B calls C, then `timeout(C) + timeout(B overhead) < timeout(B)`, and so on up the chain.
 
 ---
+
+## Red Flags
+
+- **Starting with the data model instead of API contracts** — the schema should follow the access patterns, not the other way around; design API and user journeys first, then derive the schema
+- **Microservices for a greenfield system** — premature decomposition introduces distributed-systems overhead before domain boundaries are understood; start as a modular monolith
+- **Ignoring the CAP theorem tradeoff** — every distributed system is either CP or AP under partition; make the choice explicit, document it, and design client error handling accordingly
+- **Sharding without modeling both write and read access patterns** — a shard key that distributes writes evenly can cause hot-spot reads; model all query patterns before committing to a key
+- **Read replicas for all reads** — replication lag means replica reads return stale data; never read from a replica immediately after a write in the same request flow
+- **No failure-mode analysis at design time** — designing for the happy path and deferring failure handling to implementation produces brittle systems; define timeout, retry, and circuit-breaker policies in the design
+- **ADR skipped because the decision "feels obvious"** — obvious decisions are often the hardest to reverse; write the ADR before implementation starts, including rejected alternatives
 
 ## Checklist
 

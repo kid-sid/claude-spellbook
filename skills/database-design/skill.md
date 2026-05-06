@@ -1,6 +1,6 @@
 ---
 name: database-design
-description: "Relational database design: normalization (1NF–3NF), schema naming conventions, primary key strategies, indexing (B-tree, GIN, composite, partial), query optimization with EXPLAIN ANALYZE, zero-downtime migration patterns, and connection pooling. PostgreSQL-focused with Alembic, Prisma, and golang-migrate examples."
+description: "Use when designing a schema, adding indexes to fix slow queries, writing a zero-downtime migration, diagnosing N+1 issues with EXPLAIN ANALYZE, or configuring connection pooling for a PostgreSQL-backed service."
 ---
 
 # Database Design
@@ -677,6 +677,17 @@ ALTER ROLE app_user SET idle_in_transaction_session_timeout = '60s';
 Or apply per-session in application code at connection acquisition time.
 
 ---
+
+## Red Flags
+
+- **`NOT NULL` column added directly on a live table without a DEFAULT** — `ALTER TABLE users ADD COLUMN tier TEXT NOT NULL` takes a full table lock and breaks concurrent inserts; use the expand-contract pattern (add nullable, backfill, then add constraint)
+- **`CREATE INDEX` without `CONCURRENTLY` on a table with active write traffic** — a blocking index build holds an exclusive lock for the entire build duration, causing a write outage; always use `CREATE INDEX CONCURRENTLY`
+- **Using `FLOAT` or `DOUBLE PRECISION` for monetary amounts** — floating-point arithmetic accumulates rounding errors in financial calculations; use `NUMERIC(12,2)`
+- **Using `TIMESTAMP` instead of `TIMESTAMPTZ`** — naive timestamps have no timezone context, producing silent midnight-offset bugs in multi-region deployments or DST transitions
+- **Polymorphic associations with `entity_type` + `entity_id`** — a generic integer FK cannot be enforced by the database engine; referential integrity is entirely application-side and fragile
+- **No index on foreign key columns** — PostgreSQL does not auto-index foreign keys; every `JOIN` and `ON DELETE` cascade on an unindexed FK performs a full sequential scan
+- **Composite index with the range column first** — an index on `(created_at, tenant_id)` cannot use the index efficiently for a query filtering `tenant_id = ?`; always put equality columns first
+- **Renaming a column directly with `RENAME COLUMN`** — any code still using the old name breaks immediately across a rolling deploy; use the dual-write expand-contract pattern across multiple deploys
 
 ## Checklist
 

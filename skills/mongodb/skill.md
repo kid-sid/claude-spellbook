@@ -1,6 +1,6 @@
 ---
 name: mongodb
-description: Async MongoDB patterns using Motor covering CRUD, querying operators, aggregation pipelines ($match/$group/$lookup/$project), index design (compound, text, TTL, sparse), transactions, change streams, and Agentex adk.state integration.
+description: Use when writing async MongoDB queries with Motor, designing aggregation pipelines, creating indexes, running multi-document transactions, or working with adk.state in Agentex agents.
 ---
 
 # MongoDB — Async Patterns with Motor
@@ -357,6 +357,16 @@ Always load → mutate → save in sequence. Never hold state in workflow memory
 | Schema versioning | Evolving document shape | Add `schema_version` field, migrate lazily |
 
 ---
+
+## Red Flags
+
+- **No index on query filter or sort fields** — MongoDB performs a collection scan for every unindexed query; `find({"user_id": x})` on a million-document collection takes seconds without an index on `user_id`
+- **Unbounded `find()` in production** — `db.collection.find({})` without `.limit()` loads the entire collection into memory; always add `.limit(N)` and paginate with a cursor
+- **`$match` not as the first pipeline stage** — aggregation stages before `$match` process every document before filtering; placing `$match` first lets MongoDB use indexes and dramatically reduces the work for subsequent stages
+- **`datetime.utcnow()` instead of `datetime.now(timezone.utc)`** — `utcnow()` returns a naive datetime with no timezone info and is deprecated in Python 3.12; use `datetime.now(timezone.utc)` to get a timezone-aware UTC datetime that Motor stores correctly
+- **Transactions without a replica set** — `client.start_session()` multi-document transactions require a replica set (or `mongos`); on a standalone instance they raise a server error; use a replica set even in development (`mongo --replSet rs0`)
+- **Embedding unbounded arrays** — pushing to a `tags[]` or `events[]` array without a `$slice` limit grows the document indefinitely, eventually hitting the 16 MB BSON document size limit; cap arrays at creation time using `$push` with `$slice`
+- **Holding state in workflow memory instead of `adk.state`** — Temporal replays recreate the workflow from scratch; any in-memory state not persisted to MongoDB via `adk.state` is lost on replay, causing the workflow to behave differently than the first execution
 
 ## Checklist
 

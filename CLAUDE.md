@@ -75,6 +75,7 @@ skills/<skill-name>/skill.md     — skill reference files (install to ~/.claude
 - `api-design` — REST API conventions, pagination, error responses, versioning
 - `database-design` — schema design, indexing, migrations, query optimization
 - `microservices` — service decomposition, sync/async communication, circuit breaker, saga, CQRS, API gateway
+- `writing-plans` — zero-placeholder implementation plans: absolute paths, full code blocks, verify commands, rollback steps
 
 ### Development
 - `coding-standards` — naming conventions, SOLID, design patterns, code smells
@@ -118,7 +119,9 @@ skills/<skill-name>/skill.md     — skill reference files (install to ~/.claude
 | Agent | Purpose |
 |---|---|
 | `security-auditor` | Full codebase OWASP Top 10 audit — secrets, injection, auth, crypto, misconfiguration, dependencies |
-| `code-reviewer` | Deep PR review across logic, quality, security, test coverage, and performance for large diffs |
+| `code-reviewer` | Two-stage PR review: spec compliance (does it implement what was asked?), then code quality, security, test coverage, and performance |
+| `code-reviewer-spec` | Stage 1 only — verify a change fully implements its stated requirements, check for missing pieces and scope creep |
+| `code-reviewer-quality` | Stage 2 only — evaluate code quality, security, performance, and test coverage after spec is confirmed |
 | `dependency-auditor` | Audit all manifests for vulnerable, outdated, unpinned, and abandoned packages across every ecosystem |
 | `test-coverage-agent` | Map untested code paths across a module and write the missing tests |
 | `onboarding-agent` | Generate a new-joiner guide covering architecture, setup, key files, env vars, and gotchas |
@@ -130,7 +133,7 @@ Every skill file follows this exact structure:
 ```markdown
 ---
 name: <kebab-case matching folder name>
-description: <one dense keyword-rich sentence>
+description: Use when <triggering conditions — not a summary of what the skill covers>
 ---
 
 # Title
@@ -142,9 +145,14 @@ One-sentence intro.
 
 ## Content Sections (## and ###)
 
+## Red Flags
+- **Anti-pattern name** — why it's wrong and what to do instead (6-10 items)
+
 ## Checklist
 - [ ] 8-15 items, "before you ship" perspective
 ```
+
+**Description discipline:** The `description` field controls when Claude auto-activates a skill. It must start with "Use when" and describe triggering conditions only — never a summary of topics covered. Workflow summaries in descriptions cause agents to skip reading the full skill.
 
 ### Code Examples
 - Language-agnostic topics: show Python, TypeScript, and Go as siblings

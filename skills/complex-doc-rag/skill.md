@@ -1,6 +1,6 @@
 ---
 name: complex-doc-rag
-description: RAG design patterns for complex documents — PDFs (scanned, native, multi-column, tables, embedded images, text-in-images), Excel (multi-sheet, merged cells, embedded charts), CSV (dialect, encoding, wide tables), and standalone images — covering extraction, chunking, metadata, and cost-tiered processing.
+description: Use when building a RAG pipeline that ingests PDFs, Excel, CSV, or images — especially when debugging silent data loss, choosing between OCR tools, or handling edge cases like scanned pages, merged cells, or embedded charts.
 ---
 
 # Complex Document RAG
@@ -731,6 +731,16 @@ def handle_long_cells(df: pd.DataFrame, source: str, sheet: str) -> list[dict]:
 | Cross-reference (`see Figure 3`) | Retrieved chunk has no figure description | Dereference during extraction: append target figure description inline |
 | Version / re-indexing | Stale or duplicate chunks | Per-page SHA-256 hash; delete-then-reindex only changed pages |
 | Vision API cost at scale | Budget blowout | Tier 1→2→3 escalation; content-hash cache; use Batch API (50% discount) |
+
+## Red Flags
+
+- **Single extraction strategy for all PDF types** — a text-layer extractor silently returns empty strings on scanned PDFs; detect the PDF type first and route to the appropriate extractor
+- **Splitting tables across chunk boundaries** — a table split mid-row destroys the row/column relationship; extract tables as atomic units and include column headers in every chunk
+- **Embedding raw OCR output** — OCR errors corrupt vector representations; apply confidence-threshold filtering and light cleanup before embedding any scanned text
+- **Fixed chunk size across all document types** — a 512-token chunk that works for prose loses coherence for dense financial tables; tune chunk size per content type based on retrieval evals
+- **No content-hash cache for expensive extractions** — re-extracting the same 200-page PDF on every reindex burns vision API budget; cache extraction output keyed by file hash
+- **Missing metadata attached to chunks** — a chunk without page number, section header, or source filename can't be cited; attach document metadata to every chunk before indexing
+- **Excel formulas read as formula strings** — formula cells that reference external workbooks return `#REF!` or stale cached values; always read the evaluated cell value, not the formula string
 
 ## Checklist
 

@@ -1,6 +1,6 @@
 ---
 name: fastapi
-description: FastAPI patterns covering app structure, APIRouter, dependency injection with Depends, Pydantic v2 models, lifespan events, middleware, background tasks, error handling, OAuth2 auth, WebSockets, and testing with pytest + httpx.
+description: Use when structuring a FastAPI application, designing dependency injection chains, defining Pydantic v2 schemas, adding JWT authentication, or writing async route tests with httpx.
 ---
 
 # FastAPI Patterns
@@ -460,6 +460,16 @@ app.dependency_overrides[get_current_user] = lambda: fake_user
 ```
 
 ---
+
+## Red Flags
+
+- **Business logic in route handlers** — handlers that do more than parse input, call a service, and return a response become untestable; keep handlers thin and domain logic in service layers
+- **Multiple `Depends()` each creating their own DB session** — separate session per dependency in one request can lead to inconsistent reads; use a single session factory via a shared lifespan dependency
+- **`BackgroundTasks` for work that must not be lost** — `BackgroundTasks` run in-process and die with the worker on crash or restart; use a proper job queue (Celery, ARQ) for durable background work
+- **Pydantic models shared between API and DB layers** — using the same model for request validation and ORM mapping couples the API contract to the DB schema; maintain separate schemas for each layer
+- **SDK clients or DB pools initialized at module level without lifespan** — module-level initialization prevents proper startup/shutdown and breaks test isolation; use the `@asynccontextmanager` lifespan pattern
+- **`HTTPException` raised from service or domain layers** — HTTP exceptions in business logic couple the domain to the web framework; raise domain exceptions and map them to HTTP responses at the route layer
+- **`response_model` omitted on endpoints returning ORM objects** — without `response_model`, FastAPI serializes the full ORM object including internal fields; always declare `response_model` to control the response schema
 
 ## Checklist
 

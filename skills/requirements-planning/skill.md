@@ -1,6 +1,6 @@
 ---
 name: requirements-planning
-description: "Requirements planning: writing user stories with INVEST criteria, BDD acceptance criteria (Given/When/Then), PRD templates (Problem/Goals/Non-Goals/Requirements/Metrics), story pointing with Fibonacci scale, epic decomposition with vertical slicing, and Definition of Done templates."
+description: Use when writing a PRD, drafting user stories with acceptance criteria, breaking an epic into sprint-sized vertical slices, story pointing in planning poker, or defining a team's Definition of Done.
 ---
 
 # Requirements Planning
@@ -289,6 +289,16 @@ Copy this into your team's working agreement and adjust as needed.
 ```
 
 ---
+
+## Red Flags
+
+- **User stories without acceptance criteria** — "as a user I want to log in" is untestable; every story needs explicit Given/When/Then scenarios agreed before development starts
+- **Estimating in hours** — hour estimates imply false precision and ignore team velocity variance; use relative Fibonacci story points for sizing
+- **Horizontal technical slices** ("backend API for X", "DB schema for X") — these deliver no user value alone; always slice to include the full end-to-end user-visible behavior
+- **Definition of Done defined inconsistently per story** — inconsistent DoD creates review surprises; agree on a team-wide DoD (tests, review, deployed to staging) before the sprint starts
+- **Non-goals written as "future work"** — "multi-tenant support in v2" in a non-goals section implies a promise; explicitly state items are out of scope with no timeline
+- **Success metrics defined as "users will love it"** — unmeasurable goals make it impossible to declare a feature successful or failed; tie metrics to specific, observable behavior
+- **No timebox for stories with unknown technical risk** — committing to high-uncertainty stories without a spike investigation leads to wildly missed estimates and scope creep
 
 ## Checklist
 

@@ -1,6 +1,6 @@
 ---
 name: performance
-description: "Application performance: CPU/memory/I/O profiling (cProfile+snakeviz, clinic.js+0x, pprof), caching strategies (in-process LRU, Redis, HTTP Cache-Control/ETags), database N+1 fix per ORM, async patterns for I/O vs CPU-bound work, and performance budgets tied to SLOs."
+description: Use when diagnosing a slow endpoint, fixing N+1 queries, adding a caching layer, offloading CPU-bound work to threads, or defining a latency budget for a service.
 ---
 
 # Performance
@@ -458,6 +458,16 @@ Fail the build if p99 degrades more than 20% from the baseline captured on `main
 > See also: `database-design`, `observability`, `performance-testing`
 
 ---
+
+## Red Flags
+
+- **Optimizing before profiling** — intuition targets the wrong 5% of runtime; always profile with representative load before touching any code
+- **Profiling with 1K rows when production has 10M** — hotspots at small scale vanish or invert at large scale; profile with production-representative data volume
+- **Blanket eager loading to fix N+1** — fetching every relationship on every query loads data you never use; apply `selectinload`/`joinedload` surgically to proven hotspots
+- **In-process LRU cache across forked workers** — forked processes maintain separate memory spaces; a cache write in one worker is invisible to others; use Redis for cross-process caching
+- **Async for CPU-bound work** — Python asyncio and Node.js event loops don't parallelize CPU; CPU-bound work blocks the loop; offload to `ProcessPoolExecutor` or a task queue
+- **ETags set but `If-None-Match` not handled server-side** — setting ETag without handling conditional requests means clients never get 304; implement both sides of the exchange
+- **Mean latency as the primary metric** — mean hides tail problems; always track p95 and p99; the slowest 1% of requests represents the worst user experience
 
 ## Checklist
 

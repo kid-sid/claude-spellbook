@@ -1,6 +1,6 @@
 ---
 name: ci-cd
-description: "CI/CD pipelines with GitHub Actions: workflow triggers, job dependencies, dependency caching, matrix builds, quality gates (lint/test/security/coverage), OIDC-based cloud auth, environment promotion (staging to prod), artifact publishing to GHCR/PyPI/npm, and complete workflow examples for Python, TypeScript, and Go."
+description: "Use when setting up or debugging GitHub Actions pipelines — adding quality gates, configuring OIDC cloud auth, building matrix test runs, publishing artifacts to GHCR/PyPI/npm, or promoting builds from staging to production."
 ---
 
 # CI/CD with GitHub Actions
@@ -697,6 +697,17 @@ jobs:
 | Release on tag push                 | `push` with `tags: ['v*']`                |
 
 ---
+
+## Red Flags
+
+- **Storing cloud credentials as GitHub Secrets** — long-lived access keys can be exfiltrated via PR log injection; use OIDC federated credentials (`aws-actions/configure-aws-credentials`) instead
+- **Hardcoding `runs-on: ubuntu-latest` without version pinning** — `ubuntu-latest` can shift to a new OS major version mid-project, silently changing available toolchains; pin to `ubuntu-22.04` for stability
+- **Single monolithic job with 20+ steps** — any step failure retries the entire job from scratch; split into separate jobs with `needs:` so fast gates (lint) don't block slow ones (security scan)
+- **Pushing to `main` without a required status check** — branch protection "Required status checks" must be configured in GitHub Settings, not just in the YAML; YAML alone can be bypassed
+- **Cache key without a lockfile hash** — using `key: ${{ runner.os }}-pip` without `hashFiles(...)` causes stale caches after dependency updates, producing false green builds
+- **Tagging Docker images with only `latest`** — `latest` is overwritten on every build; a failed rollback cannot target a specific previous image; always add a commit SHA tag alongside `latest`
+- **Using `pull_request_target` without careful filtering** — this trigger runs in the context of the base branch and has access to secrets, making it exploitable by a forked PR that modifies the workflow
+- **Skipping `--cov-fail-under` or equivalent threshold** — coverage upload without a fail threshold lets coverage silently drop to zero; the gate must actively fail the build
 
 ## Checklist
 

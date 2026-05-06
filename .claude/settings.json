@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Edit(skills/**)",
+      "Read(skills/**)"
+    ]
+  }
+}

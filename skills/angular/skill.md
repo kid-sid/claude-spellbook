@@ -1,6 +1,6 @@
 ---
 name: angular
-description: Angular patterns covering standalone components, signals, dependency injection, reactive and template-driven forms, routing, HttpClient with interceptors, RxJS in Angular context, NgRx state management, change detection (OnPush), pipes, directives, and testing with TestBed.
+description: Use when building or refactoring Angular applications — choosing between signals, RxJS, and NgRx for state, configuring routing with guards and lazy loading, optimizing change detection, or writing TestBed component tests.
 ---
 
 # Angular Patterns
@@ -645,6 +645,16 @@ describe('UserService', () => {
 | Forgetting to unsubscribe from route params | Use `toSignal(this.route.paramMap)` or `takeUntilDestroyed()` |
 
 ---
+
+## Red Flags
+
+- **`ChangeDetectionStrategy.Default` on new components** — Default CD runs on every browser event across the entire tree; all new components should use `OnPush` and rely on signals or the `async` pipe
+- **Subscribing in a component without unsubscribing** — a bare `subscribe()` without `takeUntilDestroyed()`, the `async` pipe, or an `ngOnDestroy` unsubscribe creates a memory leak
+- **`any` type in templates** — Angular's `strictTemplates` flag catches type mismatches at compile time; `any` silences the check and defers the error to runtime
+- **Service provided in a component's `providers` array** — a component-provided service creates a new instance per component; for singleton behavior, provide at the module or root level
+- **Mixing `[(ngModel)]` and reactive forms in the same component** — template-driven and reactive form approaches manage state separately and conflict when mixed; pick one approach per form
+- **Direct DOM manipulation bypassing Angular's abstractions** — accessing the DOM directly breaks SSR and bypasses change detection; use `Renderer2`, the CDK, or signals
+- **Forgetting `markForCheck()` after async updates in `OnPush` components** — signals and the `async` pipe trigger CD automatically; manually pushed non-signal updates in `OnPush` require explicit `markForCheck()`
 
 ## Checklist
 

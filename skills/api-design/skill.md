@@ -1,6 +1,6 @@
 ---
 name: api-design
-description: REST API design patterns including resource naming, status codes, pagination, filtering, error responses, versioning, and rate limiting for production APIs.
+description: Use when designing new REST endpoints, reviewing an existing API contract, adding pagination or filtering, planning a versioning strategy, or building a public or partner-facing API.
 ---
 
 # API Design Patterns
@@ -503,6 +503,16 @@ func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
     writeJSON(w, http.StatusCreated, map[string]any{"data": user})
 }
 ```
+
+## Red Flags
+
+- **Verbs in resource URLs** (`/getUsers`, `/deleteOrder`) — REST resources are nouns; use HTTP methods for actions (`GET /users`, `DELETE /orders/{id}`)
+- **200 OK for every response** — clients cannot distinguish success from failure by status code; use 201 for created, 404 for not found, 409 for conflict, etc.
+- **Unbounded list endpoints** — returning all rows without pagination causes OOM on both client and server at scale; every collection endpoint must paginate by default
+- **Breaking changes without a version bump** — removing or renaming fields silently breaks existing clients; any contract-breaking change requires a new API version
+- **Error responses without a machine-readable code** — a human-readable `message` alone is useless for programmatic handling; always include a stable `code` field alongside `message`
+- **Auth checked at route level but not resource level** — middleware that verifies "is authenticated" doesn't verify "owns this resource"; check ownership in the handler for every mutating operation
+- **Rate limiting applied globally but not per-identity** — a global limit lets one bad actor exhaust the quota for all users; limit by authenticated user or API key, not by IP alone
 
 ## Checklist
 

@@ -1,6 +1,6 @@
 ---
 name: integration-testing
-description: "Integration testing patterns: Testcontainers for real database/broker tests, HTTP API testing at service level, consumer-driven contract testing with Pact, message queue testing, and test data management. Examples in Python, TypeScript, and Go."
+description: "Use when writing tests that hit a real database or broker, setting up Testcontainers for a project, testing HTTP endpoints end-to-end within the service boundary, or implementing contract tests between two services."
 ---
 
 # Integration Testing
@@ -557,6 +557,17 @@ user = UserFactory()  # email = factory.Sequence(lambda n: f"user{n}@example.com
 - Set `TESTCONTAINERS_RYUK_DISABLED=true` only if your CI runner cannot start the Ryuk reaper container (rootless Docker environments).
 
 ---
+
+## Red Flags
+
+- **Sharing a single test database URL across all developers and CI workers** — concurrent test runs corrupt each other's data; each worker needs its own isolated database, schema, or transaction scope
+- **Using `DELETE FROM users WHERE email LIKE 'test%'` for cleanup** — string-matching cleanup is fragile and misses rows created by factories with generated emails; use transaction rollback or truncate instead
+- **Starting a Testcontainer per test function instead of per test session** — container startup takes 3–10 seconds; starting one per test inflates a 100-test suite from minutes to hours; scope to `session` or `module`
+- **Mocking the ORM or database layer in an integration test** — an integration test that mocks `db.query()` is still a unit test; it cannot catch index mismatches, constraint violations, or ORM-generated SQL bugs
+- **Hardcoded test user IDs or emails (e.g., `"admin@example.com"`)** — parallel workers both insert the same unique email and one fails with a constraint violation; use factories with sequences or UUIDs
+- **Testing the live external third-party API in integration tests** — test reliability becomes coupled to the external service's uptime; use recorded fixtures (VCR cassettes) or a sandbox environment
+- **Auth bypassed by commenting out middleware** — disabling auth middleware entirely hides bugs in how the middleware interacts with handlers; use a test-mode flag that injects a pre-signed test identity instead
+- **Running Testcontainers in CI without verifying Docker socket access** — some CI runners (sandboxed, rootless Docker) cannot start containers; verify access or configure Testcontainers Cloud before the test suite is blocked in CI
 
 ## Checklist
 

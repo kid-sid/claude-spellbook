@@ -1,6 +1,6 @@
 ---
 name: claude-code
-description: Claude Code setup and customization covering skills, slash commands, agents, hooks (PreToolUse/PostToolUse/SessionStart/Stop), settings.json permissions, MCP server registration, CLAUDE.md project instructions, and IDE integration.
+description: Use when configuring Claude Code — installing skills or agents, writing hook configurations, setting up tool permissions, registering MCP servers, or authoring CLAUDE.md project instructions.
 ---
 
 # Claude Code Setup
@@ -514,6 +514,16 @@ Tools → Claude Code → Open Session
 ```
 
 Both IDEs support inline diff review, file context injection, and running Claude Code commands from within the editor.
+
+## Red Flags
+
+- **Secrets in CLAUDE.md** — CLAUDE.md is read into every session context and often committed to git; never put API keys, passwords, or tokens there; reference environment variables instead
+- **Hooks with no `timeout` set** — a hook that hangs (network call, blocked process) suspends Claude Code indefinitely; always set `"timeout": N` seconds on every hook command
+- **`"deny": ["Bash(*)"]` blocking all shell access** — over-broad deny rules prevent running tests, linters, and build tools; scope deny rules to the specific dangerous patterns (e.g., `rm -rf`, `git push --force`)
+- **MCP server registered with `--scope project` for personal tools** — project-scoped MCP servers are stored in the repo and apply to everyone who checks it out; use `--scope user` for personal servers
+- **PostToolUse hook on `Write` that itself uses `Write`** — a write hook that writes files triggers another write event, causing infinite recursion; hooks must not trigger the same event they listen to
+- **No `matcher` on broad hooks** — a hook with an empty or missing matcher fires on every single tool use; always specify a `matcher` to limit execution to the tool or pattern that needs it
+- **CLAUDE.md with per-feature implementation notes** — CLAUDE.md is for team-wide project conventions; per-feature context belongs in inline comments, ADRs, or feature-specific docs alongside the code
 
 ## Checklist
 
