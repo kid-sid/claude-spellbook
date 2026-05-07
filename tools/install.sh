@@ -12,6 +12,7 @@
 #   bash tools/install.sh rust           # Rust (rustfmt, clippy, toolchain)
 #   bash tools/install.sh all            # Everything
 #   bash tools/install.sh node --target /path/to/project
+#   bash tools/install.sh node --force   # Overwrite files that already exist
 # ─────────────────────────────────────────────────────────────
 
 set -euo pipefail
@@ -19,12 +20,14 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TOOLS_DIR="$SCRIPT_DIR"
 TARGET="${PWD}"
+FORCE=0
 
 LANG="${1:-all}"
 shift || true
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --target|-t) TARGET="$2"; shift 2 ;;
+    --force|-f) FORCE=1; shift ;;
     *) echo "Unknown flag: $1"; exit 1 ;;
   esac
 done
@@ -33,21 +36,17 @@ echo "Installing [$LANG] tools into: $TARGET"
 echo ""
 
 # ── helpers ────────────────────────────────────────────────────
+# By default, never overwrite an existing destination file. The user
+# must pass --force to allow clobbering pre-existing tool configs.
 copy() {
   local src="$1" dst="$2"
+  if [ -f "$dst" ] && [ "$FORCE" != "1" ]; then
+    echo "  ⚠ $(basename "$dst") already exists — skipping (use --force to overwrite)"
+    echo "    manually merge from: $src"
+    return
+  fi
   cp "$src" "$dst"
   echo "  ✓ $(basename "$dst")"
-}
-
-copy_if_missing() {
-  local src="$1" dst="$2"
-  if [ -f "$dst" ]; then
-    echo "  ⚠ $(basename "$dst") already exists — manually merge from:"
-    echo "    $src"
-  else
-    cp "$src" "$dst"
-    echo "  ✓ $(basename "$dst")"
-  fi
 }
 
 # ── language installers ────────────────────────────────────────
@@ -86,8 +85,8 @@ install_svelte() {
 
 install_python() {
   echo "── Python (black, ruff) ──"
-  copy         "$TOOLS_DIR/python/requirements-dev.txt" "$TARGET/requirements-dev.txt"
-  copy_if_missing "$TOOLS_DIR/python/pyproject.toml"    "$TARGET/pyproject.toml"
+  copy "$TOOLS_DIR/python/requirements-dev.txt" "$TARGET/requirements-dev.txt"
+  copy "$TOOLS_DIR/python/pyproject.toml"       "$TARGET/pyproject.toml"
   echo ""
   echo "  Next: pip install -r requirements-dev.txt"
 }
