@@ -77,7 +77,7 @@ def search_web(query: str) -> str:
 @function_tool
 def calculate(expression: str, precision: int = 2) -> str:
     """Evaluate a mathematical expression and return the result."""
-    result = eval(expression)
+    result = eval(expression)  # use ast.literal_eval or a math parser in production
     return str(round(result, precision))
 
 # Tool returning structured data
