@@ -6,6 +6,7 @@ import os
 import fnmatch
 import subprocess
 import re
+from urllib.parse import quote
 
 mcp = FastMCP("file-structure")
 
@@ -123,7 +124,9 @@ def get_github_structure(repo: str, branch: str = "main") -> str:
     if "/" not in repo:
         return json.dumps({"error": "repo must be in 'owner/repo' format"})
 
-    url = f"https://api.github.com/repos/{repo}/git/trees/{branch}?recursive=1"
+    # quote(safe="") encodes '/', '?', '#' so a branch like "main?x=1"
+    # can't smuggle a query string into the GitHub API URL.
+    url = f"https://api.github.com/repos/{repo}/git/trees/{quote(branch, safe='')}?recursive=1"
     headers = {"Accept": "application/vnd.github+json"}
     token = os.environ.get("GITHUB_TOKEN")
     if token:
