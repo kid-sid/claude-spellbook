@@ -53,6 +53,8 @@ claude mcp add -s user memory_map C:/Users/yourname/memory_map/venv/Scripts/pyth
 
 **Manual history save:** use `/mem_save` at any time to checkpoint the current conversation.
 
+> **Privacy note:** History is summarized locally by default (truncation). To enable OpenAI-backed summarization, set `MCP_HISTORY_EXTERNAL_SUMMARIZE=1` alongside `OPENAI_API_KEY`. Only then will conversation content be sent to OpenAI.
+
 ---
 
 # Claude Spellbook

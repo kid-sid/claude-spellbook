@@ -514,6 +514,15 @@ Claude reads `CLAUDE.md` at session start and calls `load_memory` / `load_histor
 
 Use `/mem_save` at any time to manually checkpoint the current conversation. Memory and history are stored as `.mcp_memory.json` and `.mcp_history.json` in each project root.
 
+**Local-only by default.** History summaries are stored locally using simple truncation. No data leaves your machine unless you explicitly opt in to OpenAI-backed summarization by setting both env vars:
+
+```bash
+OPENAI_API_KEY=sk-...
+MCP_HISTORY_EXTERNAL_SUMMARIZE=1
+```
+
+When both are set, `history_hook.py` sends up to 4 000 characters of recent conversation dialogue to OpenAI's `gpt-4o-mini` for summarization before storing the result locally. Conversation content may include source code, file contents, and environment details — only enable this if you are comfortable with that data leaving your machine.
+
 ---
 
 ## CI / Workflows

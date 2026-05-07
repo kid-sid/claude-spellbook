@@ -3,8 +3,12 @@
 Claude Code hook: conversation history persistence.
 
 Fires on UserPromptSubmit (every message) and PreCompact (before compaction).
-Every 10 user messages (or on --force), reads the transcript, summarizes via
-GPT-4o-mini, and appends a chunk to .mcp_history.json in the project directory.
+Every 10 user messages (or on --force), reads the transcript, summarizes, and
+appends a chunk to .mcp_history.json in the project directory.
+
+By default, summarization is local (truncation). To opt in to OpenAI-backed
+summarization, set both OPENAI_API_KEY and MCP_HISTORY_EXTERNAL_SUMMARIZE=1.
+Conversation content will be sent to OpenAI only when both are present.
 
 Usage (configured in .claude/settings.local.json):
     echo '{"session_id":"...","transcript_path":"...","cwd":"..."}' | python history_hook.py
@@ -123,10 +127,11 @@ def extract_recent_dialogue(transcript_path: str, watermark: int) -> tuple[list[
 # --- GPT summarization ---
 
 def summarize_with_gpt(dialogue: str) -> str:
-    """Call OpenAI GPT-4o-mini to summarize conversation dialogue."""
+    """Summarize dialogue. Sends to OpenAI only when MCP_HISTORY_EXTERNAL_SUMMARIZE=1 is set."""
     api_key = os.environ.get("OPENAI_API_KEY", "")
-    if not api_key:
-        # Fallback: truncated raw text
+    opt_in = os.environ.get("MCP_HISTORY_EXTERNAL_SUMMARIZE", "").strip() == "1"
+
+    if not api_key or not opt_in:
         return dialogue[:300]
 
     try:
