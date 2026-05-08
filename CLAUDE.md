@@ -87,6 +87,8 @@ skills/<skill-name>/skill.md     — skill reference files (install to ~/.claude
 - `event-driven` — Kafka producer/consumer, topic partitioning, outbox pattern, dead-letter queues, idempotency, event sourcing
 - `caching` — Redis patterns, cache-aside/write-through/write-behind, TTL design, stampede prevention, HTTP Cache-Control, invalidation
 - `claude-code` — skills/commands/agents setup, hooks (PreToolUse/PostToolUse/SessionStart/Stop), settings.json permissions, MCP servers, CLAUDE.md
+- `spellbook-setup` — install claude-spellbook globally or per-project: skills, agents, commands, memory_map MCP server, lifecycle hooks, tool configs, CLAUDE.md
+- `memory-map` — install and configure memory_map MCP server: per-project/global memory, rolling history, hooks, CLAUDE.md session setup, cross-project recall, compression, privacy
 - `general-temporal` — durable Python workflows with Temporal: workflow/activity split, determinism rules, retries, signals, state management, versioning, testing
 
 ### Testing
