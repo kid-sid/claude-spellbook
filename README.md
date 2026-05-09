@@ -121,6 +121,7 @@ When you describe a task, Claude matches it against the **"When to Activate"** s
 #### Languages & Frameworks
 | Skill | Activates when… |
 |---|---|
+| `go` | Error handling patterns, goroutines/channels, context propagation, interface composition, generics, or table-driven tests |
 | `python` | Advanced type hints, async pitfalls, decorators, generators, or pattern matching |
 | `typescript` | Utility types, conditional/mapped types, discriminated unions, branded types, or `satisfies` |
 | `fastapi` | Structuring FastAPI apps, Depends injection, Pydantic v2 schemas, error handling, or testing routes |
@@ -674,6 +675,12 @@ Quick reference:
 2. Follow the format — CI catches errors automatically
 3. Fill in the PR template
 4. Conventional commits: `feat:`, `fix:`, `docs:`, `chore:`
+
+---
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=kid-sid/claude-spellbook&type=Date)](https://star-history.com/#kid-sid/claude-spellbook&Date)
 
 ---
 

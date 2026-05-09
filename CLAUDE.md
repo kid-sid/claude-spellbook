@@ -90,6 +90,7 @@ skills/<skill-name>/skill.md     — skill reference files (install to ~/.claude
 - `spellbook-setup` — install claude-spellbook globally or per-project: skills, agents, commands, memory_map MCP server, lifecycle hooks, tool configs, CLAUDE.md
 - `memory-map` — install and configure memory_map MCP server: per-project/global memory, rolling history, hooks, CLAUDE.md session setup, cross-project recall, compression, privacy
 - `general-temporal` — durable Python workflows with Temporal: workflow/activity split, determinism rules, retries, signals, state management, versioning, testing
+- `go` — error handling patterns, goroutines/channels, context propagation, interface composition, generics, functional options, HTTP, and table-driven tests
 
 ### Testing
 - `unit-testing` — AAA pattern, mocking, parameterized tests, TDD, coverage
