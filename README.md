@@ -558,49 +558,15 @@ git push origin v1.2.0
 
 ```
 claude-spellbook/
-├── skills/
-│   └── <skill-name>/
-│       └── skill.md          # Frontmatter + sections + checklist (52 skills)
-│
-├── .claude/
-│   ├── agents/
-│   │   ├── security-auditor.md      # OWASP Top 10 codebase audit
-│   │   ├── code-reviewer.md         # Deep PR review (full two-stage)
-│   │   ├── code-reviewer-spec.md    # Stage 1: spec compliance check
-│   │   ├── code-reviewer-quality.md # Stage 2: quality, security, coverage
-│   │   ├── dependency-auditor.md    # Multi-ecosystem dep vulnerability scan
-│   │   ├── test-coverage-agent.md   # Coverage gap analysis + test generation
-│   │   └── onboarding-agent.md      # New-joiner guide generator
-│   ├── commands/
-│   │   └── <command>.md      # Slash command definitions (12 commands)
-│   └── settings.local.json   # Project hooks (auto-format, safety guards)
-│
-├── tools/
-│   ├── install.sh            # Installer script
-│   ├── node/                 # prettier, eslint, markdownlint
-│   ├── typescript/           # tsconfig, strict eslint
-│   ├── svelte/               # SvelteKit, vite, prettier-plugin-svelte
-│   ├── python/               # black, ruff (pyproject.toml)
-│   ├── go/                   # golangci-lint
-│   └── rust/                 # rustfmt, clippy, rust-toolchain
-│
-├── templates/
-│   ├── python-api/           # FastAPI scaffold starter
-│   ├── typescript-api/       # Express/Fastify scaffold starter
-│   └── svelte-app/           # SvelteKit scaffold starter
-│
-├── .github/
-│   ├── workflows/
-│   │   ├── ci.yml            # Format + skill validation on push/PR
-│   │   └── release.yml       # GitHub Release on version tags
-│   ├── ISSUE_TEMPLATE/
-│   │   ├── new-skill.md      # Issue template for proposing skills
-│   │   └── bug_report.md     # Issue template for bugs
-│   └── PULL_REQUEST_TEMPLATE.md
-│
-├── CLAUDE.md                 # Session setup, skill/agent format spec, conventions
-├── CONTRIBUTING.md           # How to add skills, agents, commands, and tool configs
-└── Makefile                  # install / check / format / lint / setup
+├── skills/<name>/skill.md    — skill reference files
+├── .claude/agents/           — autonomous subagents
+├── .claude/commands/         — slash command definitions
+├── .claude/settings.local.json
+├── tools/                    — linter/formatter configs + install.sh
+├── templates/                — scaffold starters
+├── .github/workflows/        — CI + release
+├── CLAUDE.md
+└── Makefile
 ```
 
 ---
