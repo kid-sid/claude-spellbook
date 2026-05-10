@@ -131,6 +131,66 @@ jobs:
             echo "✅ All slash commands validated"
           fi
 
+  validate-agents:
+    name: Validate Agent Format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check agent frontmatter and body
+        run: |
+          ERRORS=0
+          VALID_MODELS="sonnet opus haiku inherit"
+          VALID_COLORS="red blue green yellow purple orange"
+
+          for agent in .claude/agents/*.md; do
+            echo "--- Checking: $agent ---"
+            AGENT_ERRORS=0
+
+            # Frontmatter opens with ---
+            head -1 "$agent" | grep -q "^---" || { echo "  FAIL: Missing frontmatter (first line must be ---)"; AGENT_ERRORS=1; }
+
+            # Required frontmatter fields
+            grep -q "^name:"        "$agent" || { echo "  FAIL: Missing name:";        AGENT_ERRORS=1; }
+            grep -q "^description:" "$agent" || { echo "  FAIL: Missing description:"; AGENT_ERRORS=1; }
+            grep -q "^tools:"       "$agent" || { echo "  FAIL: Missing tools:";       AGENT_ERRORS=1; }
+            grep -q "^model:"       "$agent" || { echo "  FAIL: Missing model:";       AGENT_ERRORS=1; }
+
+            # model value must be one of the allowed set
+            MODEL=$(grep "^model:" "$agent" | head -1 | sed 's/model:[[:space:]]*//')
+            if ! echo "$VALID_MODELS" | grep -qw "$MODEL"; then
+              echo "  FAIL: model '$MODEL' is not valid (allowed: $VALID_MODELS)"
+              AGENT_ERRORS=1
+            fi
+
+            # color value must be in allowed set (if present)
+            if grep -q "^color:" "$agent"; then
+              COLOR=$(grep "^color:" "$agent" | head -1 | sed 's/color:[[:space:]]*//')
+              if ! echo "$VALID_COLORS" | grep -qw "$COLOR"; then
+                echo "  FAIL: color '$COLOR' is not valid (allowed: $VALID_COLORS)"
+                AGENT_ERRORS=1
+              fi
+            fi
+
+            # System prompt body must be non-empty (content after closing ---)
+            BODY=$(awk 'BEGIN{fm=0} /^---/{fm++; next} fm>=2{print}' "$agent" | tr -d '[:space:]')
+            [ -z "$BODY" ] && { echo "  FAIL: System prompt body is empty"; AGENT_ERRORS=1; }
+
+            if [ $AGENT_ERRORS -eq 0 ]; then
+              echo "  PASS"
+            else
+              ERRORS=$((ERRORS + AGENT_ERRORS))
+            fi
+          done
+
+          echo ""
+          if [ $ERRORS -gt 0 ]; then
+            echo "❌ $ERRORS format errors found in agents"
+            exit 1
+          else
+            echo "✅ All agents passed format validation"
+          fi
+
   check-badge-sync:
     name: Check README Badge Sync
     runs-on: ubuntu-latest
