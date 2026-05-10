@@ -214,6 +214,46 @@ jobs:
             echo "✅ Badge matches actual skill count ($ACTUAL)"
           fi
 
+  check-inventory-sync:
+    name: Check Inventory Sync
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify all skills are listed in README
+        run: |
+          ERRORS=0
+          for skill_dir in skills/*/; do
+            SKILL_NAME=$(basename "$skill_dir")
+            if ! grep -q "\`${SKILL_NAME}\`" README.md; then
+              echo "FAIL: skills/$SKILL_NAME is not listed in README.md"
+              ERRORS=1
+            fi
+          done
+          if [ $ERRORS -gt 0 ]; then
+            echo "❌ Some skills are missing from README.md inventory"
+            exit 1
+          else
+            echo "✅ All skills listed in README.md"
+          fi
+
+      - name: Verify all agents are listed in README
+        run: |
+          ERRORS=0
+          for agent_file in .claude/agents/*.md; do
+            AGENT_NAME=$(basename "$agent_file" .md)
+            if ! grep -q "\`${AGENT_NAME}\`" README.md; then
+              echo "FAIL: $AGENT_NAME is not listed in README.md"
+              ERRORS=1
+            fi
+          done
+          if [ $ERRORS -gt 0 ]; then
+            echo "❌ Some agents are missing from README.md inventory"
+            exit 1
+          else
+            echo "✅ All agents listed in README.md"
+          fi
+
   check-links:
     name: Check Cross-References
     runs-on: ubuntu-latest

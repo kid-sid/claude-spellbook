@@ -358,6 +358,197 @@ Always load → mutate → save in sequence. Never hold state in workflow memory
 
 ---
 
+## Query Optimization
+
+### EXPLAIN — read the query plan
+
+```python
+# winningPlan shows which index was used (or COLLSCAN = no index)
+plan = await db.orders.find({"user_id": uid, "status": "active"}).explain()
+print(plan["queryPlanner"]["winningPlan"])
+# COLLSCAN → add an index
+# IXSCAN   → index was used; check "indexName"
+
+# executionStats — actual rows examined vs returned
+stats = await db.orders.find({"user_id": uid}).explain("executionStats")
+examined = stats["executionStats"]["totalDocsExamined"]
+returned = stats["executionStats"]["totalDocsReturned"]
+# ratio examined/returned > 10 → index is not selective enough
+```
+
+### Covered queries — zero document fetch
+
+A query is **covered** when the index contains all projected fields — MongoDB never reads the actual document:
+
+```python
+# Index: [("user_id", 1), ("status", 1), ("total", 1)]
+# Query uses only indexed fields + projects only indexed fields → covered
+cursor = db.orders.find(
+    {"user_id": uid, "status": "active"},
+    {"_id": 0, "user_id": 1, "status": 1, "total": 1},  # only indexed fields
+)
+# executionStats.totalDocsExamined == 0 confirms it's covered
+```
+
+### Index hints
+
+```python
+# Force a specific index (useful when the planner picks the wrong one)
+cursor = db.orders.find({"user_id": uid}).hint([("user_id", 1), ("created_at", -1)])
+
+# Force collection scan (bypass indexes for small collections)
+cursor = db.orders.find({}).hint([("$natural", 1)])
+```
+
+### Projection — only fetch what you need
+
+```python
+# GOOD: project only needed fields
+users = await db.users.find({}, {"name": 1, "email": 1, "_id": 0}).to_list(100)
+
+# BAD: fetch entire document when only name is needed
+users = await db.users.find({}).to_list(100)
+names = [u["name"] for u in users]
+```
+
+---
+
+## Schema Design Patterns
+
+### Embed vs. Reference Decision
+
+| Signal | Embed | Reference |
+|---|---|---|
+| Access pattern | Always read together | Read independently |
+| Cardinality | One-to-few (≤100) | One-to-many (>100) or unbounded |
+| Write pattern | Updated together | Updated independently |
+| Document size | Sub-docs are small | Sub-docs are large or growing |
+| Sharing | Only one parent | Shared across multiple parents |
+
+```python
+# EMBED — order items always loaded with the order
+{
+    "_id": ObjectId("..."),
+    "user_id": ObjectId("..."),
+    "total": 149.99,
+    "items": [                        # embed: always loaded together
+        {"product_id": "p-1", "qty": 2, "price": 49.99},
+        {"product_id": "p-2", "qty": 1, "price": 50.01},
+    ]
+}
+
+# REFERENCE — reviews exist independently; many per product
+{
+    "_id": ObjectId("..."),
+    "product_id": ObjectId("..."),    # reference: independent lifecycle
+    "user_id": ObjectId("..."),
+    "rating": 4,
+    "body": "Great product.",
+}
+```
+
+### Bucket Pattern — time-series
+
+```python
+# BAD: one document per reading → millions of tiny docs, index overhead
+{"sensor_id": "s-1", "ts": datetime(...), "temp": 22.4}
+
+# GOOD: one document per hour, readings array inside
+{
+    "sensor_id": "s-1",
+    "hour": datetime(2026, 5, 11, 14, 0, 0, tzinfo=timezone.utc),
+    "count": 60,
+    "readings": [22.4, 22.5, 22.3, ...],   # one per minute
+    "min": 22.3, "max": 22.7, "avg": 22.5, # pre-computed
+}
+# Index on sensor_id + hour → one index lookup per hour of data
+```
+
+### Schema Versioning
+
+```python
+# Add schema_version field; migrate lazily on read
+async def get_user(user_id: ObjectId) -> dict:
+    doc = await db.users.find_one({"_id": user_id})
+    version = doc.get("schema_version", 1)
+    if version == 1:
+        doc = migrate_v1_to_v2(doc)
+        await db.users.update_one(
+            {"_id": user_id},
+            {"$set": {"preferences": doc["preferences"], "schema_version": 2}}
+        )
+    return doc
+```
+
+---
+
+## TypeScript Patterns (Node.js Driver)
+
+```typescript
+import { MongoClient, ObjectId, type Db } from "mongodb";
+
+const client = new MongoClient("mongodb://localhost:27017", {
+  maxPoolSize: 20,
+  serverSelectionTimeoutMS: 5000,
+});
+await client.connect();
+const db: Db = client.db("mydb");
+
+// Find one
+const user = await db.collection("users").findOne({ email: "alice@example.com" });
+
+// Find many with pagination
+const users = await db.collection("users")
+  .find({ role: "admin" })
+  .sort({ created_at: -1 })
+  .skip(page * limit)
+  .limit(limit)
+  .toArray();
+
+// Insert
+const { insertedId } = await db.collection("users").insertOne({
+  email: "alice@example.com",
+  role: "user",
+  created_at: new Date(),
+});
+
+// Update
+await db.collection("users").updateOne(
+  { _id: new ObjectId(id) },
+  { $set: { role: "admin", updated_at: new Date() } }
+);
+
+// Aggregation
+const results = await db.collection("orders").aggregate([
+  { $match: { status: "completed" } },
+  { $group: { _id: "$user_id", total: { $sum: "$amount" }, count: { $sum: 1 } } },
+  { $sort: { total: -1 } },
+  { $limit: 10 },
+]).toArray();
+
+// Transaction
+const session = client.startSession();
+try {
+  await session.withTransaction(async () => {
+    await db.collection("accounts").updateOne(
+      { _id: fromId }, { $inc: { balance: -amount } }, { session }
+    );
+    await db.collection("accounts").updateOne(
+      { _id: toId }, { $inc: { balance: amount } }, { session }
+    );
+  });
+} finally {
+  await session.endSession();
+}
+
+// Create indexes at startup
+await db.collection("users").createIndex({ email: 1 }, { unique: true });
+await db.collection("orders").createIndex({ user_id: 1, created_at: -1 });
+await db.collection("sessions").createIndex({ expires_at: 1 }, { expireAfterSeconds: 0 });
+```
+
+---
+
 ## Red Flags
 
 - **No index on query filter or sort fields** — MongoDB performs a collection scan for every unindexed query; `find({"user_id": x})` on a million-document collection takes seconds without an index on `user_id`

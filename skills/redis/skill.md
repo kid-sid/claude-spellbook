@@ -42,6 +42,21 @@ await client.aclose()
 
 ---
 
+## Data Structure Decision Table
+
+| Structure | Use For | Avoid When |
+|---|---|---|
+| **String** | Single values, JSON blobs, counters, distributed locks | Frequently updating one field of many |
+| **Hash** | Objects with multiple fields; partial field reads/writes | >100 fields or deeply nested — use String+JSON instead |
+| **List** | FIFO queues, activity feeds, bounded history | Random access by index — use Sorted Set |
+| **Set** | Unique membership, tag intersections/unions, "online users" | Need ordering or score — use Sorted Set |
+| **Sorted Set** | Leaderboards, priority queues, time-ordered events, rate limiting | Cardinality >10M — memory gets expensive |
+| **Stream** | Durable pub/sub, consumer groups, event log | Simple fire-and-forget — use pub/sub |
+| **HyperLogLog** | Approx unique count (±0.81% error, capped at 12 KB) | Exact count required |
+| **Bitmap** | Per-user boolean flags, daily active user tracking | More than 512 MB of bits |
+
+---
+
 ## Data Structures
 
 ### Strings — single values, counters, JSON blobs
@@ -361,6 +376,145 @@ async with client.pipeline(transaction=True) as pipe:
     pipe.multi()
     pipe.decr("inventory:42")
     await pipe.execute()
+```
+
+---
+
+## SCAN — Non-Blocking Key Iteration
+
+Never use `KEYS *` in production. Use `SCAN` with a cursor instead:
+
+```python
+# Python — iterate all keys matching a pattern without blocking
+async def scan_keys(client, pattern: str) -> list[str]:
+    keys = []
+    cursor = 0
+    while True:
+        cursor, batch = await client.scan(cursor, match=pattern, count=100)
+        keys.extend(batch)
+        if cursor == 0:
+            break
+    return keys
+
+# Scan hash fields
+cursor = 0
+while True:
+    cursor, fields = await client.hscan("user:123", cursor, count=50)
+    for field, value in fields.items():
+        process(field, value)
+    if cursor == 0:
+        break
+
+# Scan sorted set members by score range (non-blocking alternative to ZRANGEBYSCORE on huge sets)
+cursor = 0
+while True:
+    cursor, members = await client.zscan("leaderboard", cursor, count=100)
+    for member, score in members:
+        process(member, score)
+    if cursor == 0:
+        break
+```
+
+---
+
+## Eviction Policies
+
+Set `maxmemory` and `maxmemory-policy` in `redis.conf` or via `CONFIG SET`:
+
+```bash
+redis-cli CONFIG SET maxmemory 2gb
+redis-cli CONFIG SET maxmemory-policy allkeys-lru
+```
+
+| Policy | Evicts | Use When |
+|---|---|---|
+| `noeviction` | Nothing — returns error on write | Data must never be lost (primary store) |
+| `allkeys-lru` | Least-recently-used key (any key) | General cache — you can't control which keys have TTL |
+| `volatile-lru` | LRU among keys with TTL | Mix of persistent + cache keys in one instance |
+| `allkeys-lfu` | Least-frequently-used key (any key) | Hotspot skew — some keys accessed far more |
+| `volatile-ttl` | Key with shortest remaining TTL | Prefer expiring the soonest-to-expire keys |
+| `allkeys-random` | Random key | Uniform access patterns, lowest overhead |
+
+**Production default for caches:** `allkeys-lru`  
+**Never use `noeviction` for a cache** — the first write after memory is full raises an error.
+
+```python
+# Check current eviction policy
+info = await client.config_get("maxmemory-policy")
+# {'maxmemory-policy': 'allkeys-lru'}
+
+# Monitor eviction rate
+stats = await client.info("stats")
+evicted = stats["evicted_keys"]   # total evictions since start
+```
+
+---
+
+## TypeScript Patterns (node-redis)
+
+```typescript
+import { createClient } from "redis";
+
+const client = createClient({
+  url: "redis://localhost:6379",
+  socket: { reconnectStrategy: (retries) => Math.min(retries * 50, 2000) },
+});
+await client.connect();
+
+// String / JSON
+await client.set("user:123", JSON.stringify(user), { EX: 300 });
+const raw = await client.get("user:123");
+const user = raw ? JSON.parse(raw) : null;
+
+// Hash
+await client.hSet("user:123", { name: "Alice", role: "admin" });
+const data = await client.hGetAll("user:123");  // Record<string, string>
+
+// Sorted set
+await client.zAdd("leaderboard", [{ score: 1500, value: "alice" }]);
+const top = await client.zRangeWithScores("leaderboard", 0, 9, { REV: true });
+
+// Pipeline
+const pipeline = client.multi();
+pipeline.set("a", "1");
+pipeline.expire("a", 60);
+pipeline.incr("counter");
+const [, , count] = await pipeline.exec();
+
+// Distributed lock
+const acquired = await client.set("lock:job:42", workerId, { NX: true, EX: 30 });
+if (!acquired) throw new Error("Lock unavailable");
+
+// Pub/sub (separate subscriber client)
+const sub = client.duplicate();
+await sub.connect();
+await sub.subscribe("events", (message) => {
+  const data = JSON.parse(message);
+  handle(data);
+});
+```
+
+---
+
+## Sentinel & Cluster Connections
+
+```python
+# Sentinel (high availability — automatic failover)
+from redis.sentinel import Sentinel
+
+sentinel = Sentinel(
+    [("sentinel-1", 26379), ("sentinel-2", 26379), ("sentinel-3", 26379)],
+    socket_timeout=0.5,
+)
+# master for writes, replica for reads
+master = sentinel.master_for("mymaster", decode_responses=True)
+replica = sentinel.slave_for("mymaster", decode_responses=True)
+
+# Cluster (horizontal scaling)
+from redis.asyncio.cluster import RedisCluster
+
+cluster = RedisCluster.from_url("redis://node-1:7000", decode_responses=True)
+await cluster.set("key", "value")   # routes to correct shard automatically
 ```
 
 ---
