@@ -10,7 +10,7 @@ A curated library of skills, slash commands, and agents that transform Claude Co
 into a precision engineering assistant — one spell at a time.
 
 [![CI](https://github.com/kid-sid/claude-spellbook/actions/workflows/ci.yml/badge.svg)](https://github.com/kid-sid/claude-spellbook/actions/workflows/ci.yml)
-![Skills](https://img.shields.io/badge/skills-54-blueviolet)
+![Skills](https://img.shields.io/badge/skills-56-blueviolet)
 ![Commands](https://img.shields.io/badge/slash%20commands-12-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
@@ -156,6 +156,7 @@ When you describe a task, Claude matches it against the **"When to Activate"** s
 | `claude-code` | Setting up skills, slash commands, agents, hooks, permissions, MCP servers, or CLAUDE.md |
 | `spellbook-setup` | Installing claude-spellbook — global vs project-level, memory_map MCP, hooks, tool configs |
 | `memory-map` | Installing memory_map MCP server, session-start CLAUDE.md, memory/history tools, cross-project recall |
+| `github-issues` | Filing bug reports, feature requests, or tasks on GitHub; triaging severity; using the gh CLI; handling regressions, flaky tests, or security vulnerabilities |
 
 #### Testing
 | Skill | Activates when… |
