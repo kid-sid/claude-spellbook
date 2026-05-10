@@ -1,3 +1,7 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
 ## Session Setup (Required)
 At the start of every session, before doing anything else:
 1. Call `load_memory` with `C:\Users\Sidhartha\claude-spellbook`
@@ -22,44 +26,9 @@ Persistent memory and conversation history is provided by the standalone [memory
 - `get_github_structure` — GitHub repo file tree
 - `get_git_history` — recent commits
 
-**One-time setup:**
-
-```bash
-# 1. Clone and install
-git clone https://github.com/kid-sid/memory_map.git
-cd memory_map
-python -m venv venv
-venv\Scripts\pip install -r requirements.txt   # Windows
-# source venv/bin/activate && pip install -r requirements.txt  # Mac/Linux
-
-# 2. Register globally (available in ALL projects)
-claude mcp add -s user memory_map C:/Users/yourname/memory_map/venv/Scripts/python.exe C:/Users/yourname/memory_map/server.py
-# Mac/Linux: claude mcp add -s user memory_map python3 /home/yourname/memory_map/server.py
-```
-
-**3. Add hooks to `~/.claude/settings.json`** so history saves automatically in every project:
-
-```json
-{
-  "hooks": {
-    "UserPromptSubmit": [{ "matcher": "", "hooks": [{ "type": "command", "command": "python C:/Users/yourname/memory_map/history_hook.py", "timeout": 10 }] }],
-    "PreCompact":       [{ "matcher": "", "hooks": [{ "type": "command", "command": "python C:/Users/yourname/memory_map/history_hook.py --force", "timeout": 15 }] }],
-    "Stop":             [{ "matcher": "", "hooks": [{ "type": "command", "command": "python C:/Users/yourname/memory_map/history_hook.py --force", "timeout": 15, "async": true }] }]
-  }
-}
-```
-
-**4. Enable memory for a project** — copy `CLAUDE.md` from the memory_map repo into the project root. Claude reads it at session start and calls `load_memory` / `load_history` automatically.
-
 **Manual history save:** use `/mem_save` at any time to checkpoint the current conversation.
 
-> **Privacy note:** History is summarized locally by default (truncation). To enable OpenAI-backed summarization, set `MCP_HISTORY_EXTERNAL_SUMMARIZE=1` alongside `OPENAI_API_KEY`. Only then will conversation content be sent to OpenAI.
-
 ---
-
-# Claude Spellbook
-
-This is a curated library of Claude Code skills, agents, and slash commands covering the full software engineering lifecycle.
 
 ## Repository Layout
 
@@ -67,7 +36,117 @@ This is a curated library of Claude Code skills, agents, and slash commands cove
 skills/<skill-name>/skill.md     — skill reference files (install to ~/.claude/skills/)
 .claude/agents/<name>.md         — autonomous subagents (install to ~/.claude/agents/)
 .claude/commands/<name>.md       — slash commands (install to ~/.claude/commands/)
+tools/<lang>/                    — drop-in linter/formatter configs for 6 languages
+templates/                       — scaffold starters
 ```
+
+---
+
+## Development Commands
+
+```bash
+make install      # Install Node + Python linting tools locally (copies from tools/ into root)
+make check        # Check which linting tools are available on your PATH
+make format       # Run prettier over all skill markdown files
+make lint         # Run markdownlint over all skill markdown files
+make help         # List all make targets
+
+# Install tool configs into another project
+make setup TARGET=/path/to/project LANG=typescript
+bash tools/install.sh python --target /path/to/project
+```
+
+There are no automated tests — validation is done by the CI workflows in `.github/workflows/ci.yml`. CI checks run on every push and PR to `main`.
+
+---
+
+## CI Validation Rules
+
+Every `skills/*/skill.md` must pass these checks or CI fails:
+
+- First line is `---` (frontmatter open)
+- Has `name:` field in frontmatter
+- Has `description:` field in frontmatter
+- Has a `## When to Activate` section
+- Has a `## Checklist` section with at least one `- [ ]` item
+
+`.claude/commands/*.md` files must be non-empty.
+
+---
+
+## Skill File Format
+
+Every skill follows this exact structure — enforced by CI:
+
+```markdown
+---
+name: <kebab-case matching folder name>
+description: Use when <triggering conditions — NOT a summary of topics>
+---
+
+# Title
+
+One-sentence intro.
+
+## When to Activate
+- Verb-leading trigger condition (6–8 items)
+
+## Content Sections (## and ###)
+
+## Red Flags
+- **Anti-pattern name** — why it's wrong and what to do instead (6–10 items)
+
+## Checklist
+- [ ] 8–15 items, "before you ship" perspective
+```
+
+**Description discipline:** The `description` field must start with `Use when` and list triggering conditions only. Topic summaries cause auto-activation to fail.
+
+**Code examples:**
+- Language-agnostic topics: show Python, TypeScript, and Go as siblings
+- Tool-specific content (GitHub Actions, Terraform, Dockerfile): native syntax only
+- Anti-patterns: `# BAD` / `# GOOD` pairs in the same code block
+- Every skill must have at least one decision/comparison table
+
+**Style:** No meta-commentary. No filler prose. Tables for decision matrices. Checklists close every skill.
+
+---
+
+## Agent File Format
+
+```markdown
+---
+name: kebab-case-name
+description: <one sentence — when to delegate to this agent vs. using a slash command>
+tools: Read, Grep, Glob, Bash   # minimum required; omit to inherit all
+model: sonnet                   # sonnet | opus | haiku | inherit
+color: red                      # optional: red | blue | green | yellow | purple | orange
+---
+
+System prompt in second person ("You are a…").
+```
+
+Agents run in an isolated context window — they do not see the parent session history. Restrict `tools` to the minimum needed (a read-only audit agent must not have `Write` or `Edit`).
+
+---
+
+## When Editing Skills
+- Read `skills/api-design/skill.md` and `skills/claude-api/skill.md` first — they are the canonical format reference
+- Match their density and style exactly
+- Keep skills focused: one domain per file, no overlap with adjacent skills
+
+## When Adding New Skills
+1. Create `skills/<name>/skill.md` following the format above
+2. Add the skill to the inventory list in both `CLAUDE.md` and `README.md`
+3. Open a PR — CI validates format automatically
+
+## When Adding New Agents
+1. Create `.claude/agents/<name>.md`
+2. Set `tools` to the minimum required
+3. Include a clear output format in the system prompt
+4. Add the agent to the Agent Inventory table in both `CLAUDE.md` and `README.md`
+
+---
 
 ## Skill Inventory
 
@@ -84,13 +163,37 @@ skills/<skill-name>/skill.md     — skill reference files (install to ~/.claude
 - `coding-standards` — naming conventions, SOLID, design patterns, code smells
 - `development-workflow` — branching, conventional commits, PR workflow, code review
 - `frontend` — React component design, state management (Zustand/Redux Toolkit), TanStack Query, React Hook Form, routing, performance, testing
+- `react` — advanced hooks, Next.js App Router, compound components, error boundaries, TypeScript + React patterns
+- `angular` — signals, standalone components, inject(), NgRx, RxJS patterns, Angular 17+ control flow
+- `tailwind` — composing utilities, responsive design, dark mode, cva variants, custom theme config
 - `event-driven` — Kafka producer/consumer, topic partitioning, outbox pattern, dead-letter queues, idempotency, event sourcing
 - `caching` — Redis patterns, cache-aside/write-through/write-behind, TTL design, stampede prevention, HTTP Cache-Control, invalidation
-- `claude-code` — skills/commands/agents setup, hooks (PreToolUse/PostToolUse/SessionStart/Stop), settings.json permissions, MCP servers, CLAUDE.md
+- `claude-code` — skills/commands/agents setup, hooks, settings.json permissions, MCP servers, CLAUDE.md
 - `spellbook-setup` — install claude-spellbook globally or per-project: skills, agents, commands, memory_map MCP server, lifecycle hooks, tool configs, CLAUDE.md
 - `memory-map` — install and configure memory_map MCP server: per-project/global memory, rolling history, hooks, CLAUDE.md session setup, cross-project recall, compression, privacy
 - `general-temporal` — durable Python workflows with Temporal: workflow/activity split, determinism rules, retries, signals, state management, versioning, testing
-- `go` — error handling patterns, goroutines/channels, context propagation, interface composition, generics, functional options, HTTP, and table-driven tests
+- `temporal` — Temporal workflows, activities, signals, determinism, failure handling (Agentex/ADK-flavored)
+- `go` — error handling patterns, goroutines/channels, context propagation, interface composition, generics, functional options, HTTP, table-driven tests
+
+### Languages & Frameworks
+- `python` — advanced type hints, async pitfalls, decorators, generators, pattern matching
+- `typescript` — utility types, conditional/mapped types, discriminated unions, branded types, `satisfies`
+- `fastapi` — FastAPI app structure, Depends injection, Pydantic v2 schemas, error handling, testing routes
+- `pydantic` — `field_validator`/`model_validator`, `Annotated` constraints, serialization, generic models, `pydantic-settings`
+- `sqlalchemy` — async SQLAlchemy 2.0 `Mapped` models, session management, joins, relationships, Alembic migrations
+- `mongodb` — Motor async CRUD, aggregation pipelines, index design, transactions
+- `postgresql` — window functions, CTEs, JSONB queries, index design, `EXPLAIN ANALYZE`, schema migrations
+- `redis` — data structure selection, caching strategies, pub/sub, Redis Streams, distributed locks
+- `websockets-sse` — real-time server push, LLM token streaming, WebSocket connection management, Redis broadcast
+- `docker` — Dockerfiles, multi-stage builds, Compose networking, health checks, debugging containers
+
+### AI & Agents
+- `agentex` — ACP agent types (sync/async/Temporal), manifests, ADK modules, local dev on Windows
+- `openai-agents` — agent definitions, `@function_tool`, handoffs, streaming, guardrails, Agentex ADK integration
+- `langgraph` — StateGraph pipelines, conditional routing, tool calling, checkpointers, interrupts
+- `ai-engineer` — RAG pipelines, vector search, agent orchestration, prompt engineering, multimodal AI, cost optimization, AI safety
+- `complex-doc-rag` — RAG for PDFs (scanned, native, multi-column, tables, images), Excel (merged cells, charts, hidden sheets), CSV (dialect, encoding, wide tables), and standalone images
+- `claude-api` — Anthropic SDK patterns, tool use, streaming, agent SDK
 
 ### Testing
 - `unit-testing` — AAA pattern, mocking, parameterized tests, TDD, coverage
@@ -102,12 +205,9 @@ skills/<skill-name>/skill.md     — skill reference files (install to ~/.claude
 ### Security & Quality
 - `security` — OWASP Top 10, JWT/OAuth2, secrets management, STRIDE, dependency scanning
 - `accessibility` — WCAG 2.1/2.2 conformance, ARIA, keyboard navigation, focus management, contrast, screen readers
-- `claude-api` — Anthropic SDK patterns, tool use, streaming, agent SDK
 - `azure` — DefaultAzureCredential, Blob Storage, AI Search (vector/hybrid), Document Intelligence, Key Vault, retry patterns
 - `azure-service-bus` — queues vs topics/subscriptions, peek-lock settlement, DLQ, sessions, subscription filters, scheduled messages
 - `aws` — IAM credential chain, S3, DynamoDB single-table design, Lambda, SQS batch, Secrets Manager, botocore retry
-- `ai-engineer` — RAG pipelines, vector search, agent orchestration, prompt engineering, multimodal AI, cost optimization, AI safety
-- `complex-doc-rag` — RAG for PDFs (scanned, native, multi-column, tables, images), Excel (merged cells, charts, hidden sheets), CSV (dialect, encoding, wide tables), and standalone images; tiered extraction and edge-case handling
 
 ### CI/CD & Infrastructure
 - `ci-cd` — GitHub Actions workflows, quality gates, OIDC auth, artifact publishing
@@ -121,98 +221,16 @@ skills/<skill-name>/skill.md     — skill reference files (install to ~/.claude
 - `incident-response` — severity classification, runbooks, postmortems, MTTD/MTTR
 - `technical-documentation` — README templates, OpenAPI, ADRs, tech specs, docs-as-code
 
+---
+
 ## Agent Inventory
 
 | Agent | Purpose |
 |---|---|
 | `security-auditor` | Full codebase OWASP Top 10 audit — secrets, injection, auth, crypto, misconfiguration, dependencies |
-| `code-reviewer` | Two-stage PR review: spec compliance (does it implement what was asked?), then code quality, security, test coverage, and performance |
-| `code-reviewer-spec` | Stage 1 only — verify a change fully implements its stated requirements, check for missing pieces and scope creep |
-| `code-reviewer-quality` | Stage 2 only — evaluate code quality, security, performance, and test coverage after spec is confirmed |
+| `code-reviewer` | Two-stage PR review: spec compliance then code quality, security, test coverage, and performance |
+| `code-reviewer-spec` | Stage 1 only — verify a change fully implements its stated requirements |
+| `code-reviewer-quality` | Stage 2 only — code quality, security, performance, and test coverage after spec is confirmed |
 | `dependency-auditor` | Audit all manifests for vulnerable, outdated, unpinned, and abandoned packages across every ecosystem |
 | `test-coverage-agent` | Map untested code paths across a module and write the missing tests |
 | `onboarding-agent` | Generate a new-joiner guide covering architecture, setup, key files, env vars, and gotchas |
-
-## Conventions for This Repo
-
-### Skill File Format
-Every skill file follows this exact structure:
-```markdown
----
-name: <kebab-case matching folder name>
-description: Use when <triggering conditions — not a summary of what the skill covers>
----
-
-# Title
-
-One-sentence intro.
-
-## When to Activate
-- 6-8 verb-leading trigger conditions
-
-## Content Sections (## and ###)
-
-## Red Flags
-- **Anti-pattern name** — why it's wrong and what to do instead (6-10 items)
-
-## Checklist
-- [ ] 8-15 items, "before you ship" perspective
-```
-
-**Description discipline:** The `description` field controls when Claude auto-activates a skill. It must start with "Use when" and describe triggering conditions only — never a summary of topics covered. Workflow summaries in descriptions cause agents to skip reading the full skill.
-
-### Code Examples
-- Language-agnostic topics: show Python, TypeScript, and Go as siblings
-- Tool-specific content (GitHub Actions, Terraform, Dockerfile): use native syntax only
-- Anti-patterns: show as `# BAD` / `# GOOD` pairs in the same code block
-- Every skill has at least one decision/comparison table
-
-### Quality Standards
-- No meta-commentary ("This skill covers...")
-- No filler prose — terse, code-forward writing
-- Tables for decision matrices and comparisons
-- Checklists close every skill
-- Cross-references via `> See also: \`skill-name\`` where meaningful
-
-## When Editing Skills
-- Read the existing `api-design` and `claude-api` skills first — they set the canonical format
-- Match the density and style of existing skills exactly
-- Test activation by describing a relevant task in a new Claude Code session
-- Keep skills focused: one domain per skill, no overlap with adjacent skills
-
-## When Adding New Skills
-1. Create `skills/<name>/skill.md`
-2. Follow the frontmatter + content format above exactly
-3. Add the skill to the inventory list in this file
-4. Update `README.md` if the structure section is outdated
-
-### Agent File Format
-
-Every agent file lives at `.claude/agents/<name>.md` and follows this structure:
-
-```markdown
----
-name: kebab-case-name
-description: <one sentence — when to delegate to this agent vs. using a slash command>
-tools: Read, Grep, Glob, Bash   # comma-separated; omit to inherit all
-model: sonnet                   # sonnet | opus | haiku | inherit
-color: red                      # optional: red | blue | green | yellow | purple | orange
----
-
-System prompt content. This is what the agent receives instead of the parent session's context.
-
-Describe the agent's methodology, output format, and any rules it must follow.
-```
-
-**Key differences from slash commands:**
-- Agents run in an isolated context window — they do not see the parent session history
-- The `description` field controls when Claude auto-delegates; write it as "Use this agent when…"
-- Restrict `tools` to the minimum needed — a read-only audit agent should not have `Write` or `Edit`
-- The body is a system prompt, not a task prompt — write it in second person ("You are a…")
-
-## When Adding New Agents
-1. Create `.claude/agents/<name>.md`
-2. Set `tools` to the minimum required (principle of least privilege)
-3. Include a clear output format in the system prompt so results are consistent
-4. Add the agent to the Agent Inventory table in this file
-5. Update the Agents section in `README.md`
