@@ -131,6 +131,29 @@ jobs:
             echo "✅ All slash commands validated"
           fi
 
+  check-badge-sync:
+    name: Check README Badge Sync
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify skills badge matches actual count
+        run: |
+          ACTUAL=$(find skills -name "skill.md" | wc -l | tr -d ' ')
+          BADGE=$(grep -o 'skills-[0-9]*-blueviolet' README.md | grep -o '[0-9]*')
+
+          echo "Actual skill count : $ACTUAL"
+          echo "Badge skill count  : $BADGE"
+
+          if [ "$BADGE" != "$ACTUAL" ]; then
+            echo ""
+            echo "❌ Badge is out of sync — update README.md:"
+            echo "   skills-${BADGE}-blueviolet  →  skills-${ACTUAL}-blueviolet"
+            exit 1
+          else
+            echo "✅ Badge matches actual skill count ($ACTUAL)"
+          fi
+
   check-links:
     name: Check Cross-References
     runs-on: ubuntu-latest
