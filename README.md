@@ -11,7 +11,7 @@ into a precision engineering assistant — one spell at a time.
 
 [![CI](https://github.com/kid-sid/claude-spellbook/actions/workflows/ci.yml/badge.svg)](https://github.com/kid-sid/claude-spellbook/actions/workflows/ci.yml)
 ![Skills](https://img.shields.io/badge/skills-58-blueviolet)
-![Commands](https://img.shields.io/badge/slash%20commands-13-blue)
+![Commands](https://img.shields.io/badge/slash%20commands-15-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 *Each skill is a spell. Cast wisely.*
@@ -25,7 +25,7 @@ into a precision engineering assistant — one spell at a time.
 | Layer | What | Count |
 |---|---|---|
 | **Skills** | Structured instruction sets loaded contextually by Claude | 58 |
-| **Slash Commands** | One-shot `/commands` for common engineering tasks | 13 |
+| **Slash Commands** | One-shot `/commands` for common engineering tasks | 15 |
 | **Agents** | Autonomous subprocesses for multi-file, long-running tasks | 7 |
 | **Tool Configs** | Drop-in linter/formatter configs for 6 languages | 6 |
 | **Templates** | Scaffold starters for Node, TypeScript, Python, Svelte | 4 |
@@ -332,6 +332,8 @@ Slash commands are one-shot prompts you run with `/command-name` in Claude Code.
 | `/prd` | Generates a Product Requirements Document pre-filled from context |
 | `/mem_save` | Manually checkpoints the current conversation to `.mcp_history.json` |
 | `/skill-validate` | Runs all CI format checks locally — skills, agents, badge sync, inventory |
+| `/create-issue` | Creates one or more GitHub issues from a natural language description |
+| `/resolve-issue` | Fetches a GitHub issue, applies the fix, comments what changed, and closes it |
 
 ### Usage examples
 
