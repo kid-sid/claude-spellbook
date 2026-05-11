@@ -1,6 +1,6 @@
 ---
 name: websockets-sse
-description: Use when building real-time features in FastAPI — choosing between WebSockets and SSE, implementing connection management, scaling broadcasts across workers with Redis, or debugging connection drops and missed events.
+description: Use when building real-time features with WebSockets or SSE — choosing between the two, implementing connection management and heartbeats, scaling broadcasts across workers with Redis, handling backpressure, writing tests for streaming endpoints, or debugging connection drops and missed events.
 ---
 
 # WebSockets and SSE Patterns
@@ -13,6 +13,9 @@ Real-time communication patterns for FastAPI: WebSockets for bidirectional, SSE 
 - Choosing between WebSockets and SSE for a use case
 - Implementing connection management (connect/disconnect, broadcast)
 - Scaling real-time across multiple workers with Redis
+- Handling backpressure or slow consumers disconnecting other clients
+- Writing tests for SSE or WebSocket endpoints
+- Implementing Node.js server-side WebSocket handling
 - Debugging connection drops, backpressure, or missed events
 - Implementing heartbeats and client-side reconnection
 
@@ -394,6 +397,213 @@ async def sse_auth(
 
 ---
 
+## Scaling Strategy — Which to Use
+
+| Strategy | Broadcast scope | Durability | Reconnect replay | Use when |
+|---|---|---|---|---|
+| In-process dict | Same worker only | None | No | Single-process dev/test only |
+| Sticky sessions (LB) | Same worker only | None | No | < 5k connections, stateful protocol |
+| Redis Pub/Sub | All workers | None | No | Chat rooms, live dashboards, fan-out |
+| Redis Streams | All workers | Yes (log) | Yes (by ID) | Task streaming, clients that rejoin mid-stream |
+
+**Choosing between Pub/Sub and Streams:** use Streams when a reconnecting client must replay messages it missed. Pub/Sub messages are fire-and-forget — a client that disconnects for 2 seconds loses everything in that window.
+
+---
+
+## Node.js / TypeScript Server
+
+For non-FastAPI stacks. Uses the `ws` package.
+
+### WebSocket server (ws + Express)
+
+```typescript
+import { WebSocketServer, WebSocket } from 'ws';
+import { createServer } from 'http';
+import express from 'express';
+
+const app = express();
+const server = createServer(app);
+const wss = new WebSocketServer({ server });
+
+const clients = new Map<string, WebSocket>();
+
+wss.on('connection', (ws, req) => {
+  const clientId = new URL(req.url!, 'http://x').searchParams.get('id') ?? crypto.randomUUID();
+  clients.set(clientId, ws);
+
+  // Heartbeat
+  const ping = setInterval(() => {
+    if (ws.readyState === WebSocket.OPEN) ws.ping();
+  }, 30_000);
+
+  ws.on('message', (raw) => {
+    const msg = JSON.parse(raw.toString());
+    for (const [id, client] of clients) {
+      if (id !== clientId && client.readyState === WebSocket.OPEN) {
+        client.send(JSON.stringify({ from: clientId, ...msg }));
+      }
+    }
+  });
+
+  ws.on('close', () => {
+    clients.delete(clientId);
+    clearInterval(ping);
+  });
+});
+
+server.listen(3000);
+```
+
+### SSE endpoint (Express)
+
+```typescript
+import express from 'express';
+
+const app = express();
+
+app.get('/stream/:id', (req, res) => {
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('X-Accel-Buffering', 'no');
+  res.flushHeaders();
+
+  const send = (event: string, data: unknown) => {
+    res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
+  };
+
+  const heartbeat = setInterval(() => res.write(': ping\n\n'), 30_000);
+
+  // Subscribe to your event emitter / Redis channel here
+  const unsub = eventBus.on(req.params.id, (payload) => send('update', payload));
+
+  req.on('close', () => {
+    clearInterval(heartbeat);
+    unsub();
+  });
+});
+```
+
+---
+
+## Backpressure & Slow Consumers
+
+A slow client that can't drain its send buffer blocks `await ws.send_json()` indefinitely, stalling the broadcast loop and starving other clients.
+
+**FastAPI — timeout on send:**
+
+```python
+import asyncio
+from fastapi import WebSocket, WebSocketDisconnect
+
+async def safe_send(ws: WebSocket, message: dict, timeout: float = 5.0) -> bool:
+    """Returns False and disconnects if client cannot receive within timeout."""
+    try:
+        await asyncio.wait_for(ws.send_json(message), timeout=timeout)
+        return True
+    except (asyncio.TimeoutError, Exception):
+        await ws.close(code=1001)  # going away
+        return False
+
+async def broadcast(manager: ConnectionManager, message: dict):
+    dead = []
+    for cid, ws in manager.active.items():
+        ok = await safe_send(ws, message)
+        if not ok:
+            dead.append(cid)
+    for cid in dead:
+        manager.disconnect(cid)
+```
+
+**Node.js — check bufferedAmount before sending:**
+
+```typescript
+function safeSend(ws: WebSocket, data: string, maxBuffer = 64 * 1024): boolean {
+  if (ws.bufferedAmount > maxBuffer) {
+    ws.terminate();  // hard close — don't wait
+    return false;
+  }
+  ws.send(data);
+  return true;
+}
+```
+
+---
+
+## Testing Real-Time Endpoints
+
+### FastAPI — WebSocket (pytest + TestClient)
+
+```python
+from fastapi.testclient import TestClient
+from app.main import app
+
+def test_websocket_echo():
+    client = TestClient(app)
+    with client.websocket_connect("/ws/user1") as ws:
+        ws.send_json({"type": "message", "text": "hello"})
+        data = ws.receive_json()
+        assert data["from"] == "user1"
+        assert data["text"] == "hello"
+
+def test_websocket_broadcast():
+    client = TestClient(app)
+    with client.websocket_connect("/ws/a") as ws_a, \
+         client.websocket_connect("/ws/b") as ws_b:
+        ws_a.send_json({"type": "message", "text": "hi"})
+        data = ws_b.receive_json()
+        assert data["from"] == "a"
+```
+
+### FastAPI — SSE (pytest + httpx AsyncClient)
+
+```python
+import json
+import pytest
+from httpx import AsyncClient, ASGITransport
+from app.main import app
+
+@pytest.mark.asyncio
+async def test_sse_stream():
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        events = []
+        async with client.stream("GET", "/tasks/task-1/stream") as resp:
+            assert resp.status_code == 200
+            async for line in resp.aiter_lines():
+                if line.startswith("data:"):
+                    events.append(json.loads(line[5:].strip()))
+                if any(e.get("type") == "done" for e in events):
+                    break
+        assert len(events) > 0
+```
+
+### Node.js — ws (Jest + ws client)
+
+```typescript
+import { WebSocketServer } from 'ws';
+import WebSocket from 'ws';
+
+test('broadcasts to other clients', (done) => {
+  const wss = new WebSocketServer({ port: 0 });
+  const { port } = wss.address() as { port: number };
+
+  setupHandlers(wss);  // your connection logic
+
+  const a = new WebSocket(`ws://localhost:${port}?id=a`);
+  const b = new WebSocket(`ws://localhost:${port}?id=b`);
+
+  b.on('message', (raw) => {
+    const msg = JSON.parse(raw.toString());
+    expect(msg.from).toBe('a');
+    expect(msg.text).toBe('hello');
+    wss.close(done);
+  });
+
+  a.on('open', () => a.send(JSON.stringify({ text: 'hello' })));
+});
+```
+
+---
+
 ## Red Flags
 
 - **WebSocket when SSE is sufficient** — WebSocket requires sticky sessions or Redis coordination to scale and needs manual reconnection logic; if the server only pushes data (LLM tokens, task updates), SSE is simpler and supported everywhere with automatic browser reconnect
@@ -416,3 +626,7 @@ async def sse_auth(
 - [ ] `await asyncio.sleep(0)` inside SSE generators to yield to event loop
 - [ ] Stream ended with `event: done` so client knows to close and stop reconnecting
 - [ ] Redis Stream `xread` uses `block=5000` (5s timeout) not `block=0` (blocks forever)
+- [ ] Slow consumer handled — `send_json` wrapped with timeout; timed-out clients disconnected
+- [ ] WebSocket tests use `TestClient.websocket_connect` or an in-process ws server (no real network)
+- [ ] SSE tests use `AsyncClient.stream` + `aiter_lines` to consume events line-by-line
+- [ ] Node.js: `ws.bufferedAmount` checked before send to detect slow consumers

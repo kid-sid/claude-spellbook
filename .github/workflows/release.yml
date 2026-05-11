@@ -31,9 +31,10 @@ jobs:
           fi
 
           # Count changes
-          SKILLS=$(find skills -name "skill.md" | wc -l)
-          COMMANDS=$(find .claude/commands -name "*.md" 2>/dev/null | wc -l)
-          TOOLS=$(ls -d tools/*/ 2>/dev/null | wc -l)
+          SKILLS=$(find skills -name "skill.md" | wc -l | tr -d ' ')
+          AGENTS=$(find .claude/agents -name "*.md" 2>/dev/null | wc -l | tr -d ' ')
+          COMMANDS=$(find .claude/commands -name "*.md" 2>/dev/null | wc -l | tr -d ' ')
+          TOOLS=$(ls -d tools/*/ 2>/dev/null | wc -l | tr -d ' ')
 
           # Write to file for the release body
           cat > release_notes.md << 'NOTES_EOF'
@@ -43,6 +44,7 @@ jobs:
           NOTES_EOF
 
           echo "- **$SKILLS** skills covering the full SDLC" >> release_notes.md
+          echo "- **$AGENTS** autonomous agents" >> release_notes.md
           echo "- **$COMMANDS** slash commands" >> release_notes.md
           echo "- **$TOOLS** language tool configurations" >> release_notes.md
           echo "" >> release_notes.md
