@@ -205,8 +205,8 @@ jobs:
           # Check shield badge (line: skills-N-blueviolet)
           BADGE=$(grep -oE 'skills-[0-9]+-blueviolet' README.md | grep -oE '[0-9]+')
 
-          # Check "What's in the box" table count (last number on the Skills row)
-          TABLE_COUNT=$(grep '^\| \*\*Skills\*\*' README.md | grep -oE '[0-9]+' | tail -1)
+          # Check "What's in the box" table count (second-to-last |-delimited field on the Skills row)
+          TABLE_COUNT=$(grep -F '| **Skills**' README.md | awk -F'|' '{print $(NF-1)}' | tr -d ' ')
 
           echo "Actual: $ACTUAL | Badge: $BADGE | Table: $TABLE_COUNT"
 
