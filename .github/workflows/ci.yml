@@ -200,18 +200,30 @@ jobs:
       - name: Verify skills badge matches actual count
         run: |
           ACTUAL=$(find skills -name "skill.md" | wc -l | tr -d ' ')
-          BADGE=$(grep -o 'skills-[0-9]*-blueviolet' README.md | grep -o '[0-9]*')
+          ERRORS=0
 
-          echo "Actual skill count : $ACTUAL"
-          echo "Badge skill count  : $BADGE"
+          # Check shield badge (line: skills-N-blueviolet)
+          BADGE=$(grep -oE 'skills-[0-9]+-blueviolet' README.md | grep -oE '[0-9]+')
+
+          # Check "What's in the box" table count (last number on the Skills row)
+          TABLE_COUNT=$(grep '^\| \*\*Skills\*\*' README.md | grep -oE '[0-9]+' | tail -1)
+
+          echo "Actual: $ACTUAL | Badge: $BADGE | Table: $TABLE_COUNT"
 
           if [ "$BADGE" != "$ACTUAL" ]; then
-            echo ""
-            echo "❌ Badge is out of sync — update README.md:"
-            echo "   skills-${BADGE}-blueviolet  →  skills-${ACTUAL}-blueviolet"
+            echo "❌ Badge out of sync — change skills-${BADGE}-blueviolet → skills-${ACTUAL}-blueviolet"
+            ERRORS=1
+          fi
+
+          if [ "$TABLE_COUNT" != "$ACTUAL" ]; then
+            echo "❌ Table count out of sync — change Skills row count ${TABLE_COUNT} → ${ACTUAL}"
+            ERRORS=1
+          fi
+
+          if [ $ERRORS -gt 0 ]; then
             exit 1
           else
-            echo "✅ Badge matches actual skill count ($ACTUAL)"
+            echo "✅ Badge and table both match actual skill count ($ACTUAL)"
           fi
 
   check-inventory-sync:
