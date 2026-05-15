@@ -478,17 +478,40 @@ pip install memory-map-mcp
 
 **Step 2 — Set up MongoDB** (required for conversation history)
 
-Add your connection string to `~/.env` or export it directly:
+You need a MongoDB instance. Two options:
 
+- **Free Atlas cluster** (recommended — no install): [mongodb.com/cloud/atlas/register](https://www.mongodb.com/cloud/atlas/register) → create a free M0 cluster → get the connection string from "Connect → Drivers"
+- **Local MongoDB**: [mongodb.com/try/download/community](https://www.mongodb.com/try/download/community) → install → URI is `mongodb://localhost:27017`
+
+> Key-value memory (`save_memory` / `load_memory`) works **without** MongoDB and falls back to a local file. Only conversation history requires a live connection.
+
+**Step 2b — Configure environment variables**
+
+The most reliable way is to export from your shell profile so the vars are available everywhere:
+
+**Mac/Linux** — add to `~/.zshrc` or `~/.bashrc`:
 ```bash
-# Local MongoDB
-MEMORY_MAP_MONGO_URI=mongodb://localhost:27017
+export MEMORY_MAP_MONGO_URI="mongodb+srv://<user>:<password>@<cluster>.mongodb.net"
 
-# MongoDB Atlas
-MEMORY_MAP_MONGO_URI=mongodb+srv://<user>:<password>@<cluster>.mongodb.net
+# Optional: OpenAI vector search (semantic similarity in history retrieval)
+# export MEMORY_MAP_EMBED_PROVIDER=openai
+# export OPENAI_API_KEY=sk-...
+
+# Optional: local CPU vector search (no API key needed)
+# export MEMORY_MAP_EMBED_PROVIDER=local
 ```
 
-Key-value memory (`save_memory` / `load_memory`) works without MongoDB. History tools require it.
+**Windows** — add to your PowerShell profile (`$PROFILE`):
+```powershell
+$env:MEMORY_MAP_MONGO_URI = "mongodb+srv://<user>:<password>@<cluster>.mongodb.net"
+```
+
+Or use System Properties → Environment Variables for a permanent GUI-based setting.
+
+Alternatively, create a `.env` file in **each project root** — `memory-map-mcp` picks it up automatically when Claude Code opens that project:
+```bash
+MEMORY_MAP_MONGO_URI=mongodb+srv://<user>:<password>@<cluster>.mongodb.net
+```
 
 **Step 3 — Register globally** (available in all projects, not just one)
 
