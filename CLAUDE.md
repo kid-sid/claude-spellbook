@@ -5,8 +5,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Session Setup (Required)
 At the start of every session, before doing anything else:
 1. Call `load_memory` with `C:\Users\Sidhartha\claude-spellbook`
-2. Call `load_history` with `C:\Users\Sidhartha\claude-spellbook`
-3. Read both outputs — they contain saved context and conversation history
+2. Call `suggest_history` with `C:\Users\Sidhartha\claude-spellbook` and the user's first message
+3. Read both outputs — they contain saved context and the most relevant conversation history
 4. Do not explore files or ask clarifying questions that memory already answers
 
 Save or update memory entries whenever you learn something worth keeping across sessions.
