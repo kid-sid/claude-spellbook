@@ -10,7 +10,7 @@ A curated library of skills, slash commands, and agents that transform Claude Co
 into a precision engineering assistant — one spell at a time.
 
 [![CI](https://github.com/kid-sid/claude-spellbook/actions/workflows/ci.yml/badge.svg)](https://github.com/kid-sid/claude-spellbook/actions/workflows/ci.yml)
-![Skills](https://img.shields.io/badge/skills-58-blueviolet)
+![Skills](https://img.shields.io/badge/skills-60-blueviolet)
 ![Commands](https://img.shields.io/badge/slash%20commands-16-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
@@ -24,7 +24,7 @@ into a precision engineering assistant — one spell at a time.
 
 | Layer | What | Count |
 |---|---|---|
-| **Skills** | Structured instruction sets loaded contextually by Claude | 58 |
+| **Skills** | Structured instruction sets loaded contextually by Claude | 60 |
 | **Slash Commands** | One-shot `/commands` for common engineering tasks | 16 |
 | **Agents** | Autonomous subprocesses for multi-file, long-running tasks | 7 |
 | **Tool Configs** | Drop-in linter/formatter configs for 6 languages | 6 |
