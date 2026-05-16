@@ -141,6 +141,11 @@ When you describe a task, Claude matches it against the **"When to Activate"** s
 | `database-design` | Designing schemas, indexes, or migrations |
 | `microservices` | Decomposing services, designing async comms, circuit breakers, CQRS |
 
+#### Security & Identity
+| Skill | Activates when… |
+|---|---|
+| `auth` | Implementing login flows, JWTs, OAuth2/OIDC, RBAC/ABAC, or token refresh and revocation |
+
 #### Development
 | Skill | Activates when… |
 |---|---|
