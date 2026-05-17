@@ -10,7 +10,7 @@ A curated library of skills, slash commands, and agents that transform Claude Co
 into a precision engineering assistant — one spell at a time.
 
 [![CI](https://github.com/kid-sid/claude-spellbook/actions/workflows/ci.yml/badge.svg)](https://github.com/kid-sid/claude-spellbook/actions/workflows/ci.yml)
-![Skills](https://img.shields.io/badge/skills-63-blueviolet)
+![Skills](https://img.shields.io/badge/skills-64-blueviolet)
 ![Commands](https://img.shields.io/badge/slash%20commands-16-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
@@ -24,7 +24,7 @@ into a precision engineering assistant — one spell at a time.
 
 | Layer | What | Count |
 |---|---|---|
-| **Skills** | Structured instruction sets loaded contextually by Claude | 63 |
+| **Skills** | Structured instruction sets loaded contextually by Claude | 64 |
 | **Slash Commands** | One-shot `/commands` for common engineering tasks | 16 |
 | **Agents** | Autonomous subprocesses for multi-file, long-running tasks | 7 |
 | **Tool Configs** | Drop-in linter/formatter configs for 6 languages | 6 |
@@ -138,6 +138,7 @@ When you describe a task, Claude matches it against the **"When to Activate"** s
 | `requirements-planning` | Writing user stories, PRDs, or acceptance criteria |
 | `system-design` | Designing systems, estimating capacity, drawing architecture |
 | `api-design` | Designing or reviewing REST endpoints |
+| `graphql` | Designing schemas, resolvers, mutations, DataLoader, subscriptions, or securing a GraphQL API |
 | `database-design` | Designing schemas, indexes, or migrations |
 | `microservices` | Decomposing services, designing async comms, circuit breakers, CQRS |
 
