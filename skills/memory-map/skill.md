@@ -1,67 +1,91 @@
 ---
 name: memory-map
-description: Use when installing or configuring memory_map, writing CLAUDE.md session-setup instructions, choosing what to save in memory vs history, managing cross-project memory, tuning compression, or troubleshooting why Claude isn't loading context at session start.
+description: Use when installing or configuring memory_map, writing CLAUDE.md session-setup instructions, choosing what to save in memory vs history, managing or pruning history chunks, using cross-project memory, tuning compression, or troubleshooting why Claude isn't loading context at session start.
 ---
 
 # memory_map
 
-Persistent memory and conversation history MCP server for Claude Code — key-value context store, rolling history, and cross-project recall across sessions.
+Persistent memory and conversation history MCP server for Claude Code — key-value context store, rolling MongoDB-backed history, and cross-project recall across sessions.
 
 ## When to Activate
 
 - Installing memory_map for the first time or on a new machine
-- Writing `CLAUDE.md` session-setup instructions (`load_memory`, `load_history`)
+- Writing `CLAUDE.md` session-setup instructions (`load_memory`, `suggest_history`)
 - Deciding what belongs in memory vs history vs inline code comments
+- Pruning stale or sensitive history chunks (`delete_history`)
 - Using cross-project or global memory tools
-- Configuring history compression or external summarization
+- Configuring history compression or vector search
 - Debugging why Claude starts a session without prior context
 - Manually checkpointing conversation history with `/mem_save`
 
 ## Architecture
 
 ```
-memory_map/
-├── server.py          — MCP server (stdio transport)
-├── history_hook.py    — hook script: saves history on UserPromptSubmit / Stop / PreCompact
-├── CLAUDE.md          — copy into any project to enable session-start loading
-└── venv/              — Python virtualenv
+memory_map_mcp/
+├── server.py          — MCP server: 22 tools via FastMCP (stdio transport)
+├── history_hook.py    — hook script: saves Q&A pairs on UserPromptSubmit / Stop / PreCompact
+└── history_store.py   — storage layer: MongoDB CRUD, BM25, vector search, RRF, MMR
 
-Per-project files (written to the project root automatically):
-├── .mcp_memory.json   — key-value store (load_memory / save_memory)
-└── .mcp_history.json  — rolling conversation history (20 chunks)
+Storage:
+├── MongoDB memory_map.history    — conversation chunks (suggest_history, save_history, delete_history)
+├── MongoDB memory_map.memory     — key-value memory (save_memory / load_memory)
+└── .mcp_memory.json              — per-project fallback when MongoDB not configured
 ```
 
-MCP registration makes all tools available globally. Per-project activation is controlled by `CLAUDE.md` — Claude only calls `load_memory` / `load_history` automatically if the instructions tell it to.
+MongoDB is **required** for all history features. Key-value memory works without it (falls back to `.mcp_memory.json`), but `suggest_history`, `save_history`, and `delete_history` all return an error if `MEMORY_MAP_MONGO_URI` is unset.
+
+MCP registration makes all tools available globally. Per-project activation is controlled by `CLAUDE.md` — Claude only calls `load_memory` / `suggest_history` automatically if the instructions tell it to.
 
 ## Installation
 
-### Step 1 — Clone and Install
+### Step 1 — Install from PyPI
+
+```bash
+pip install memory-map-mcp
+```
+
+Or install from source for development:
 
 ```bash
 git clone https://github.com/kid-sid/memory_map.git
 cd memory_map
+python -m venv venv
 
 # Windows
-python -m venv venv
-venv\Scripts\pip install -r requirements.txt
+venv\Scripts\pip install -e .
 
 # Mac/Linux
-python3 -m venv venv
-source venv/bin/activate && pip install -r requirements.txt
+source venv/bin/activate && pip install -e .
 ```
 
-### Step 2 — Register the MCP Server
+### Step 2 — Set MongoDB URI
+
+Add to your environment / shell profile:
+
+```bash
+export MEMORY_MAP_MONGO_URI="mongodb+srv://user:pass@cluster.mongodb.net/"
+```
+
+Free-tier MongoDB Atlas works. Without this, history tools are unavailable.
+
+### Step 3 — Register the MCP Server
 
 ```bash
 # Global — available in every project (recommended)
+claude mcp add -s user memory_map memory-map-mcp
+```
+
+If installed from source:
+
+```bash
 # Windows
 claude mcp add -s user memory_map \
   C:/Users/yourname/memory_map/venv/Scripts/python.exe \
-  C:/Users/yourname/memory_map/server.py
+  C:/Users/yourname/memory_map/memory_map_mcp/server.py
 
 # Mac/Linux
 claude mcp add -s user memory_map \
-  python3 /home/yourname/memory_map/server.py
+  python3 /home/yourname/memory_map/memory_map_mcp/server.py
 ```
 
 Registration scope options:
@@ -72,11 +96,11 @@ Registration scope options:
 | `-s project` | `.claude/mcp.json` | This repo only (committed, shared) |
 | `-s local` | `.claude/mcp.local.json` | This repo only (gitignored, personal) |
 
-Always use `-s user` for memory_map — it stores files with local paths that differ per machine.
+Always use `-s user` for memory_map — it stores files at local paths that differ per machine.
 
 Verify: `claude mcp list` → should show `memory_map`.
 
-### Step 3 — Lifecycle Hooks
+### Step 4 — Lifecycle Hooks
 
 Add to `~/.claude/settings.json` so history is captured automatically in every project:
 
@@ -88,7 +112,7 @@ Add to `~/.claude/settings.json` so history is captured automatically in every p
         "matcher": "",
         "hooks": [{
           "type": "command",
-          "command": "python C:/Users/yourname/memory_map/history_hook.py",
+          "command": "memory-map-hook",
           "timeout": 10
         }]
       }
@@ -98,7 +122,7 @@ Add to `~/.claude/settings.json` so history is captured automatically in every p
         "matcher": "",
         "hooks": [{
           "type": "command",
-          "command": "python C:/Users/yourname/memory_map/history_hook.py --force",
+          "command": "memory-map-hook --force",
           "timeout": 15
         }]
       }
@@ -108,7 +132,7 @@ Add to `~/.claude/settings.json` so history is captured automatically in every p
         "matcher": "",
         "hooks": [{
           "type": "command",
-          "command": "python C:/Users/yourname/memory_map/history_hook.py --force",
+          "command": "memory-map-hook --force",
           "timeout": 15,
           "async": true
         }]
@@ -118,7 +142,7 @@ Add to `~/.claude/settings.json` so history is captured automatically in every p
 }
 ```
 
-Mac/Linux: use `python3` and POSIX paths.
+If installed from source, replace `memory-map-hook` with the full path to `history_hook.py`.
 
 | Hook | When | Flag |
 |---|---|---|
@@ -126,27 +150,23 @@ Mac/Linux: use `python3` and POSIX paths.
 | `PreCompact` | Before context window compaction | `--force` |
 | `Stop` | When Claude finishes a turn | `--force`, `async: true` |
 
-### Step 4 — Enable Per-Project Memory
+### Step 5 — Enable Per-Project Memory
 
-Copy `CLAUDE.md` from the memory_map repo into the project root:
-
-```bash
-# Windows
-copy C:\Users\yourname\memory_map\CLAUDE.md CLAUDE.md
-
-# Mac/Linux
-cp ~/memory_map/CLAUDE.md ~/your-project/CLAUDE.md
-```
-
-Commit `CLAUDE.md` — teammates get session-start loading automatically. The file content Claude needs:
+Add this block to `CLAUDE.md` in the project root:
 
 ```markdown
 ## Session Setup (Required)
 At the start of every session, before doing anything else:
 1. Call `load_memory` with the current working directory
-2. Call `load_history` with the current working directory
+2. Call `suggest_history` with the current working directory and the user's first message
 3. Read both outputs before exploring files or asking questions
+
+Save or update memory entries whenever you learn something worth keeping across sessions.
+If something loaded from memory is no longer accurate, update it with `save_memory` using the same key.
+Use short, lowercase keys: `stack`, `current_work`, `gotchas`, `key_files`. Keep values concise.
 ```
+
+Commit `CLAUDE.md` — teammates get session-start loading automatically.
 
 ---
 
@@ -154,11 +174,11 @@ At the start of every session, before doing anything else:
 
 ### `save_memory` / `load_memory` / `delete_memory`
 
-Per-project key-value store. Values persist in `.mcp_memory.json`.
+Per-project key-value store backed by MongoDB (or `.mcp_memory.json` without MongoDB).
 
 ```
 save_memory(project_path, key, value)
-load_memory(project_path)         → returns all key-value pairs
+load_memory(project_path, query="", top_k=10)   → compressed key-value output
 delete_memory(project_path, key)
 ```
 
@@ -171,7 +191,6 @@ delete_memory(project_path, key)
 | `gotchas` | Non-obvious constraints, known failures, env quirks |
 | `key_files` | Entry points, config files, critical paths |
 | `conventions` | Non-obvious team decisions not in the code |
-| `blockers` | Current blockers or dependencies on others |
 
 Rules:
 - Short, lowercase, underscore-separated keys
@@ -195,24 +214,95 @@ save_global_memory(key, value)
 load_global_memory()
 ```
 
-Use for: user identity, preferred tools, cross-project conventions, API key locations (not values). Never store secrets.
+Use for: user identity, preferred tools, cross-project conventions. Never store secrets.
 
 ---
 
 ## History Tools
 
-### `load_history` / `save_history`
+Conversation history is stored in MongoDB (`memory_map.history` collection), one document per Q&A pair. Tags are extracted by local keyword matching — no LLM calls.
 
-Rolling conversation history stored in `.mcp_history.json` (20 chunks max). `history_hook.py` calls `save_history` automatically via hooks — no manual calls needed during normal use.
+### `suggest_history` — primary session-start tool
 
 ```
-load_history(project_path, last_n=5)   → returns N most recent chunks
-save_history(project_path, content)
+suggest_history(project_path, user_message, token_budget=2000, diversity=0.3)
 ```
 
-### Manual Checkpoint: `/mem_save`
+Hybrid retrieval pipeline:
+1. **Concurrent fetch** — vector search + BM25/tag scoring run in parallel
+2. **RRF merge** — Reciprocal Rank Fusion combines both ranked lists
+3. **MMR re-ranking** — penalises redundant chunks so results cover more distinct topics
+4. **Anchor** — most recent chunk always included for session continuity
+5. **Token budget** — fills remaining budget with most recent unselected chunks
 
-Run `/mem_save` at any time to force-save the current conversation as a history chunk. Use before long operations, context compaction, or ending a session mid-task.
+Call at session start with the user's first message. Returns the most relevant chunks within the token budget.
+
+### `save_history` / `load_history` / `get_history_chunks`
+
+```
+save_history(project_path, dialogue, session_id="", tags="")
+load_history(project_path, last_n=5)        → tag index (id, timestamp, tags, preview, tokens)
+get_history_chunks(project_path, ids)       → full dialogue for comma-separated chunk IDs
+```
+
+`save_history` is called automatically by `history_hook.py` — no manual calls needed during normal use. Auto-summarises oldest chunks when total tokens exceed `MCP_HISTORY_MAX_TOKENS` (default 50 000).
+
+`load_history` + `get_history_chunks` are for inspection and the `/mem_save` flow. Do not use them at session start — use `suggest_history` instead.
+
+### `delete_history` — prune stale or sensitive chunks
+
+```
+delete_history(project_path, ids="", older_than_days=0)
+```
+
+Remove chunks you no longer need. At least one filter must be provided:
+
+```
+# Delete specific chunks by ID (get IDs from load_history or suggest_history output)
+delete_history("C:/projects/my-api", ids="6830a1f2e4b0c1234567abcd,6830a1f2e4b0c1234567ef01")
+→ "deleted: 2 chunk(s)"
+
+# Remove everything older than 30 days
+delete_history("C:/projects/my-api", older_than_days=30)
+→ "deleted: 7 chunk(s)"
+
+# Both filters together (union — deletes chunks matching either condition)
+delete_history("C:/projects/my-api", ids="6830a1f2e4b0c1234567abcd", older_than_days=30)
+```
+
+Deletion is scoped to the given project — other projects are never affected.
+
+### `summarise_history`
+
+```
+summarise_history(project_path, n=10)
+```
+
+Collapse the n oldest chunks into a single summary chunk. Triggered automatically by `save_history` when the token budget is exceeded; call manually to compact immediately.
+
+### `backfill_history_embeddings` / `backfill_bm25_text`
+
+```
+backfill_history_embeddings(project_path="", batch_size=20)
+backfill_bm25_text(project_path="", batch_size=100)
+```
+
+Run once after enabling vector search or upgrading from an older version. Repeat until `remaining=0`. Pass `project_path=""` to backfill across all projects.
+
+---
+
+## Vector Search (Optional)
+
+Set `MEMORY_MAP_EMBED_PROVIDER` to enable semantic search in `suggest_history`:
+
+| Value | How |
+|---|---|
+| `openai` | `text-embedding-3-small` (1536-dim); requires `OPENAI_API_KEY` |
+| `local` | `sentence-transformers/all-MiniLM-L6-v2` (384-dim, CPU, no API key) |
+| `atlas` | Atlas autoEmbed (Voyage-4) via Atlas Vector Search |
+| *(unset)* | BM25 + tag scoring only — no vector search |
+
+Without `MEMORY_MAP_EMBED_PROVIDER`, `suggest_history` still works using BM25 and tag matching.
 
 ---
 
@@ -220,10 +310,10 @@ Run `/mem_save` at any time to force-save the current conversation as a history 
 
 | Tool | What it does |
 |---|---|
-| `list_projects` | List all projects that have saved memory |
+| `list_projects` | List all projects that have saved memory under a base path |
 | `get_project_summary(project_path)` | One-line summary of a project's memory |
-| `load_cross_project_memory(project_path)` | Load memory from a different project |
-| `search_across_projects(query)` | Full-text search across all project memories |
+| `load_cross_project_memory(base_path)` | Load memory from sibling projects |
+| `search_across_projects(base_path, keyword)` | Full-text search across all project memories |
 
 Use cases:
 - Referencing a pattern from a sibling project
@@ -236,11 +326,9 @@ Use cases:
 
 | Tool | What it does |
 |---|---|
-| `get_local_structure(project_path)` | Gitignore-aware directory tree |
-| `get_github_structure(owner, repo, branch?)` | GitHub repo file tree via API |
-| `get_git_history(project_path, limit?)` | Recent commits |
-
-These are read-only exploration tools — call them at session start to orient quickly without reading every file.
+| `get_local_structure(path, max_depth=5)` | Gitignore-aware directory tree |
+| `get_github_structure(repo, branch="main", max_depth=5)` | GitHub repo file tree via API |
+| `get_git_history(path, count=5)` | Recent commits as `hash | subject` |
 
 ---
 
@@ -252,29 +340,11 @@ set_compression(project_path, level)
 
 | Level | Output | When to use |
 |---|---|---|
-| `0` | Raw — full fidelity | Debugging, inspecting history content |
-| `1` | Compact — whitespace stripped | Normal use |
-| `2` | Dense — abbreviations, no filler | Low context budget, large histories |
+| `0` | Raw — full fidelity | Debugging, inspecting memory content |
+| `1` | Compact (default) | Normal use |
+| `2` | Dense — abbreviations | Low context budget, large memories |
 
-Set per-project; persists until changed. Default is compact (1).
-
----
-
-## Privacy and External Summarization
-
-History is stored **locally** by default using simple truncation — no data leaves the machine.
-
-To enable OpenAI-backed summarization (richer history compression):
-
-```bash
-# Add to your environment / shell profile
-export OPENAI_API_KEY="sk-..."
-export MCP_HISTORY_EXTERNAL_SUMMARIZE=1
-```
-
-When both are set, `history_hook.py` sends up to 4 000 characters of recent conversation to `gpt-4o-mini` before storing the summary locally.
-
-**What gets sent:** recent dialogue including source code, file contents, and environment details. Only enable if you're comfortable with that leaving your machine. Do not enable on machines with proprietary codebases unless your org has approved the OpenAI data-processing agreement.
+Set per-project; persists until changed. Entries not updated in 30+ days get a `[stale: Nd old]` annotation at levels 1 and 2.
 
 ---
 
@@ -286,15 +356,14 @@ Minimal session-setup block for any project:
 ## Session Setup (Required)
 At the start of every session, before doing anything else:
 1. Call `load_memory` with the current working directory
-2. Call `load_history` with the current working directory
+2. Call `suggest_history` with the current working directory and the user's first message
 3. Read both outputs before exploring files or asking questions
 
 Save or update memory entries whenever you learn something worth keeping across sessions.
 If something loaded from memory is no longer accurate, update it with `save_memory` using the same key.
-Use short, lowercase keys: `stack`, `current_work`, `gotchas`, `key_files`. Keep values concise.
+Do not call `load_history` + `get_history_chunks` manually at session start — those are for inspection
+and the /mem_save flow only.
 ```
-
-Extend this block with project-specific keys or additional tool calls (`get_local_structure`, etc.) when the project benefits from them.
 
 ---
 
@@ -302,38 +371,39 @@ Extend this block with project-specific keys or additional tool calls (`get_loca
 
 | Symptom | Likely cause | Fix |
 |---|---|---|
-| Claude starts sessions cold with no memory | `CLAUDE.md` missing or not instructing `load_memory` | Copy `CLAUDE.md` from memory_map repo into project root |
+| Claude starts sessions cold with no memory | `CLAUDE.md` missing or not instructing `load_memory` | Add session-setup block to `CLAUDE.md` |
 | `load_memory` returns "no memory saved yet" | First session, or memory was deleted | Normal — save entries as context is established |
-| History not saving between sessions | Hooks missing or wrong path in `settings.json` | Verify `history_hook.py` path; run it manually: `python memory_map/history_hook.py --force` |
-| MCP server not found | Not registered, or wrong Python path | Re-run `claude mcp add`; verify with `claude mcp list` |
-| `history_hook.py` hangs the session | No `timeout` on hook or slow Python startup | Ensure `"timeout": 10` is set; use virtualenv Python, not system Python |
-| Memory values growing stale | Not updating keys after project shifts | Always overwrite with the same key rather than adding new ones |
+| History tools return "MongoDB unavailable" | `MEMORY_MAP_MONGO_URI` not set | Export the env var; verify with `echo $MEMORY_MAP_MONGO_URI` |
+| `suggest_history` returns "no history yet" | Hooks not configured, or first session | Check hooks in `settings.json`; run `memory-map-hook --force` manually |
+| MCP server not found | Not registered, or wrong path | Re-run `claude mcp add`; verify with `claude mcp list` |
+| Hook hangs the session | No `timeout` on hook | Ensure `"timeout": 10` is set on every hook |
+| Stale chunks surfacing in suggestions | Old history never pruned | Run `delete_history(project_path, older_than_days=N)` |
 
 ---
 
 ## Red Flags
 
-- **Putting API keys or passwords in `save_memory`** — memory is stored in `.mcp_memory.json` in the project root, which may be committed or shared; store only key names and env var references, never values
-- **No `CLAUDE.md` after registering the MCP server** — registration makes tools available but doesn't call them; Claude only auto-loads memory if the session-setup instructions tell it to
-- **Using `-s project` for memory_map registration** — project-scoped MCP servers are committed and affect all teammates, but memory_map stores files at local absolute paths that differ per machine; use `-s user` always
-- **Saving entire file contents or code blocks in memory** — memory values should be one to two sentences; large values bloat `.mcp_memory.json`, slow load times, and crowd out useful keys
-- **Setting `MCP_HISTORY_EXTERNAL_SUMMARIZE=1` on a machine with proprietary code** — history includes file contents; check your org's data policy before enabling OpenAI-backed summarization
-- **Hooks without `timeout`** — a stalled `history_hook.py` (e.g., network timeout during OpenAI summarization) blocks Claude Code indefinitely; always set `"timeout": N`
-- **Calling `load_history` + `get_history_chunks` manually at session start** — these are for inspection and the `/mem_save` flow only; use `load_history(last_n=5)` for session continuity, not the raw chunk API
+- **Putting API keys or passwords in `save_memory`** — memory may be committed or shared; store only key names and env var references, never values
+- **No `CLAUDE.md` after registering the MCP server** — registration makes tools available but Claude only auto-loads memory if the session-setup instructions tell it to
+- **Using `-s project` for memory_map registration** — memory_map stores files at local absolute paths that differ per machine; use `-s user` always
+- **Saving entire file contents or code blocks in memory** — values should be one to two sentences; large values bloat the store and crowd out useful keys
+- **Hooks without `timeout`** — a stalled hook blocks Claude Code indefinitely; always set `"timeout": N`
+- **Calling `load_history` + `get_history_chunks` at session start** — use `suggest_history` instead; it runs hybrid retrieval and returns the most relevant chunks within a token budget
+- **Never running `delete_history`** — history grows unbounded; prune stale projects periodically with `older_than_days`
 
 ---
 
 ## Checklist
 
-- [ ] memory_map cloned; virtualenv created; `pip install -r requirements.txt` succeeded
-- [ ] `claude mcp list` shows `memory_map` with correct Python path
+- [ ] `pip install memory-map-mcp` succeeded; `memory-map-mcp` command is on PATH
+- [ ] `MEMORY_MAP_MONGO_URI` is set in the environment
+- [ ] `claude mcp list` shows `memory_map` with correct entry point
 - [ ] Registration used `-s user` (not `-s project` or `-s local`)
-- [ ] Three lifecycle hooks present in `~/.claude/settings.json`: `UserPromptSubmit`, `PreCompact`, `Stop`
+- [ ] Three lifecycle hooks in `~/.claude/settings.json`: `UserPromptSubmit`, `PreCompact`, `Stop`
 - [ ] Every hook has a `"timeout"` value; `Stop` hook has `"async": true`
-- [ ] `CLAUDE.md` copied into the project root and committed
-- [ ] `CLAUDE.md` instructs `load_memory` and `load_history` at session start
+- [ ] `CLAUDE.md` added to the project root and committed
+- [ ] `CLAUDE.md` instructs `load_memory` and `suggest_history` at session start (not `load_history`)
 - [ ] No secrets stored in `save_memory` — only descriptive values and env var names
 - [ ] Memory keys are short, lowercase, and overwrite stale values (no duplicates)
-- [ ] Compression level set appropriately for the project's history volume
-- [ ] External summarization (`MCP_HISTORY_EXTERNAL_SUMMARIZE=1`) only enabled after data-policy check
+- [ ] `backfill_history_embeddings` run if `MEMORY_MAP_EMBED_PROVIDER` was set after initial use
 - [ ] `/mem_save` used before context compaction or ending a long session mid-task
