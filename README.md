@@ -10,7 +10,7 @@ A curated library of skills, slash commands, and agents that transform Claude Co
 into a precision engineering assistant — one spell at a time.
 
 [![CI](https://github.com/kid-sid/claude-spellbook/actions/workflows/ci.yml/badge.svg)](https://github.com/kid-sid/claude-spellbook/actions/workflows/ci.yml)
-![Skills](https://img.shields.io/badge/skills-62-blueviolet)
+![Skills](https://img.shields.io/badge/skills-63-blueviolet)
 ![Commands](https://img.shields.io/badge/slash%20commands-16-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
@@ -24,7 +24,7 @@ into a precision engineering assistant — one spell at a time.
 
 | Layer | What | Count |
 |---|---|---|
-| **Skills** | Structured instruction sets loaded contextually by Claude | 62 |
+| **Skills** | Structured instruction sets loaded contextually by Claude | 63 |
 | **Slash Commands** | One-shot `/commands` for common engineering tasks | 16 |
 | **Agents** | Autonomous subprocesses for multi-file, long-running tasks | 7 |
 | **Tool Configs** | Drop-in linter/formatter configs for 6 languages | 6 |
@@ -159,6 +159,7 @@ When you describe a task, Claude matches it against the **"When to Activate"** s
 | `angular` | Signals, standalone components, inject(), NgRx, RxJS patterns, or Angular 17+ control flow |
 | `tailwind` | Composing utilities, responsive design, dark mode, cva variants, or custom theme config |
 | `event-driven` | Designing Kafka topics, producers/consumers, outbox pattern, DLQs, or event sourcing |
+| `webhooks` | Designing webhook delivery, HMAC verification, retry handling, idempotent consumers, or local testing |
 | `caching` | Adding Redis, choosing a caching strategy, designing TTLs, or configuring HTTP cache headers |
 | `claude-code` | Setting up skills, slash commands, agents, hooks, permissions, MCP servers, or CLAUDE.md |
 | `spellbook-setup` | Installing claude-spellbook — global vs project-level, memory_map MCP, hooks, tool configs |
