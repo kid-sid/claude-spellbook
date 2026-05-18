@@ -1,6 +1,6 @@
 ---
 name: performance
-description: Use when diagnosing a slow endpoint, fixing N+1 queries, adding a caching layer, offloading CPU-bound work to threads, or defining a latency budget for a service.
+description: Use when diagnosing a slow HTTP endpoint or high-latency service — profiling, adding an application-level cache, offloading CPU-bound work to threads or workers, or defining a latency budget. For slow queries or missing indexes, use database-design or postgresql.
 ---
 
 # Performance
