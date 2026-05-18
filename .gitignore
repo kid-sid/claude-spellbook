@@ -13,6 +13,9 @@ npm-debug.log*
 .mcp_memory.json
 .mcp_history.json
 
+# FastMCP runtime cache (created when memory-map-mcp boots)
+fastmcp/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
