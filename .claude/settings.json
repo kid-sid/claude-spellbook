@@ -2,7 +2,26 @@
   "permissions": {
     "allow": [
       "Edit(skills/**)",
-      "Read(skills/**)"
+      "Read(skills/**)",
+      "Bash(git ls-files*)",
+      "Bash(git log*)",
+      "Bash(git ls-files | xargs wc -l*)",
+      "Bash(wc -l*)",
+      "Bash(git diff*)",
+      "Bash(git grep*)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "WebSearch|WebFetch",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .claude/hooks/capture-web-finding.js"
+          }
+        ]
+      }
     ]
   }
 }
