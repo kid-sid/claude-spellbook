@@ -491,8 +491,14 @@ Persistent memory and conversation history are provided by the standalone [memor
 **Step 1 — Install**
 
 ```bash
+# Recommended — bundles the OpenAI client for semantic history search
+pip install "memory-map-mcp[embed-openai]"
+
+# Base install — works fine if you stick with local embeddings or BM25 only
 pip install memory-map-mcp
 ```
+
+> The `[embed-openai]` extra pulls in the OpenAI SDK so `MEMORY_MAP_EMBED_PROVIDER=openai` works without manual installs. It does **not** make `OPENAI_API_KEY` mandatory at install time — only when you actually use the OpenAI provider.
 
 **Step 2 — Set up MongoDB** (required for conversation history)
 

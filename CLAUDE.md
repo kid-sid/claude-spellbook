@@ -9,6 +9,8 @@ At the start of every session, before doing anything else:
 3. Read both outputs — they contain saved context and the most relevant conversation history
 4. Do not explore files or ask clarifying questions that memory already answers
 
+> The `load_memory` / `suggest_history` / `save_memory` tools come from the `memory_map` MCP server. Install via `pip install "memory-map-mcp[embed-openai]"` — see the **MCP Server** section in [`README.md`](README.md#mcp-server) for full setup (MongoDB, env vars, hooks). Upstream: [github.com/kid-sid/memory_map](https://github.com/kid-sid/memory_map).
+
 Save or update memory entries whenever you learn something worth keeping across sessions.
 If something loaded from memory is no longer accurate, update it with `save_memory` using the same key.
 Use short, lowercase keys: `stack`, `current_work`, `gotchas`, `key_files`, etc. Keep values concise — one or two sentences max.
