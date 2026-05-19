@@ -247,7 +247,7 @@ get_history_chunks(project_path, ids)       → full dialogue for comma-separate
 
 `save_history` is called automatically by `history_hook.py` — no manual calls needed during normal use. Auto-summarises oldest chunks when total tokens exceed `MCP_HISTORY_MAX_TOKENS` (default 50 000).
 
-`load_history` + `get_history_chunks` are for inspection and the `/mem_save` flow. Do not use them at session start — use `suggest_history` instead.
+`load_history` + `get_history_chunks` are for inspection only — listing what's saved or fetching a specific chunk by ID. Do not use them at session start — use `suggest_history` instead.
 
 ### `delete_history` — prune stale or sensitive chunks
 
@@ -361,8 +361,7 @@ At the start of every session, before doing anything else:
 
 Save or update memory entries whenever you learn something worth keeping across sessions.
 If something loaded from memory is no longer accurate, update it with `save_memory` using the same key.
-Do not call `load_history` + `get_history_chunks` manually at session start — those are for inspection
-and the /mem_save flow only.
+Do not call `load_history` + `get_history_chunks` manually at session start — those are for inspection only.
 ```
 
 ---

@@ -34,7 +34,7 @@ assignees: ''
 ## Why isn't this covered by an existing command?
 
 <!-- Check existing commands first: /review, /scaffold, /refactor, /test-gen, /security-scan,
-     /deploy-check, /create-issue, /resolve-issue, /reprompt, /skill-validate, etc.
+     /deploy-check, /create-issue, /resolve-issue, /skill-validate, etc.
      Explain what gap this fills that none of them address. -->
 
 ## Output format

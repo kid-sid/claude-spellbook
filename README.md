@@ -344,7 +344,6 @@ Slash commands are one-shot prompts you run with `/command-name` in Claude Code.
 | `/skill-validate` | Runs all CI format checks locally — skills, agents, badge sync, inventory |
 | `/create-issue` | Creates one or more GitHub issues from a natural language description |
 | `/resolve-issue` | Fetches a GitHub issue, applies the fix, comments what changed, and closes it |
-| `/reprompt` | Reviews recent conversation history and explains what was done or rewrites the last output |
 | `/update-skill` | Reviews pending findings (web discoveries, bugs, gaps) and applies approved changes to the relevant skill file |
 | `/roast-repo` | Delivers a brutally honest, technically sharp roast of the current repo — real bugs, smells, security holes, each with a fix |
 
@@ -481,7 +480,9 @@ Persistent memory and conversation history are provided by the standalone [memor
 | Tool | What it does |
 |---|---|
 | `load_memory` / `save_memory` / `delete_memory` | Per-project key-value context store |
-| `load_history` / `save_history` | Rolling conversation history (20 chunks) |
+| `suggest_history` | Primary session-start tool — hybrid retrieval (vector + BM25 + RRF + MMR) within a token budget |
+| `save_history` / `load_history` / `get_history_chunks` | Save chunks (auto-called by hooks); inspect tag index; fetch full dialogue by ID |
+| `load_global_memory` / `save_global_memory` | User-level facts shared across all projects |
 | `get_local_structure` | Local directory tree (gitignore-aware) |
 | `get_github_structure` | GitHub repo file tree |
 | `get_git_history` | Recent commits |

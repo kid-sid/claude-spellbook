@@ -470,7 +470,7 @@ All matching files are concatenated — lower-level files extend rather than rep
 ## Session Setup
 <!-- Steps Claude must run at session start -->
 1. Run `load_memory` with the current working directory
-2. Run `load_history` with the current working directory
+2. Run `suggest_history` with the current working directory and the user's first message
 
 ## Project Context
 <!-- What the project is and how it's structured -->

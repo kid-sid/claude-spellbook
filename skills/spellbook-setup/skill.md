@@ -60,24 +60,27 @@ cp -r .claude/commands/* ~/.claude/commands/
 ### Step 4 — memory_map MCP Server
 
 ```bash
-# Clone and install
-git clone https://github.com/kid-sid/memory_map.git
-cd memory_map
+# Install from PyPI — bundles the OpenAI client for semantic history search
+pip install "memory-map-mcp[embed-openai]"
 
-# Windows
-python -m venv venv
-venv\Scripts\pip install -r requirements.txt
+# Base install — works fine if you stick with local embeddings or BM25 only
+# pip install memory-map-mcp
+```
 
-# Mac/Linux
-python3 -m venv venv
-source venv/bin/activate && pip install -r requirements.txt
+Set the MongoDB URI (required for history; key-value memory falls back to a local file):
 
-# Register globally (substitute your actual username)
-# Windows
-claude mcp add -s user memory_map C:/Users/yourname/memory_map/venv/Scripts/python.exe C:/Users/yourname/memory_map/server.py
+```bash
+# Mac/Linux — add to ~/.zshrc or ~/.bashrc
+export MEMORY_MAP_MONGO_URI="mongodb+srv://<user>:<password>@<cluster>.mongodb.net"
 
-# Mac/Linux
-claude mcp add -s user memory_map python3 /home/yourname/memory_map/server.py
+# Windows PowerShell — add to $PROFILE
+$env:MEMORY_MAP_MONGO_URI = "mongodb+srv://<user>:<password>@<cluster>.mongodb.net"
+```
+
+Register globally:
+
+```bash
+claude mcp add -s user memory_map -- memory-map-mcp
 ```
 
 Verify registration:
@@ -86,36 +89,27 @@ Verify registration:
 claude mcp list
 ```
 
+See `skills/memory-map/skill.md` for full setup (vector search, env vars, troubleshooting).
+
 ### Step 5 — Lifecycle Hooks
 
-Add to `~/.claude/settings.json` (create if absent):
+Add to `~/.claude/settings.json` (create if absent). The `memory-map-hook` entry point is installed by the pip package — no need for absolute paths.
 
 ```json
 {
   "hooks": {
     "UserPromptSubmit": [
-      {
-        "matcher": "",
-        "hooks": [{ "type": "command", "command": "python C:/Users/yourname/memory_map/history_hook.py", "timeout": 10 }]
-      }
+      { "matcher": "", "hooks": [{ "type": "command", "command": "memory-map-hook", "timeout": 10 }] }
     ],
     "PreCompact": [
-      {
-        "matcher": "",
-        "hooks": [{ "type": "command", "command": "python C:/Users/yourname/memory_map/history_hook.py --force", "timeout": 15 }]
-      }
+      { "matcher": "", "hooks": [{ "type": "command", "command": "memory-map-hook --force", "timeout": 15 }] }
     ],
     "Stop": [
-      {
-        "matcher": "",
-        "hooks": [{ "type": "command", "command": "python C:/Users/yourname/memory_map/history_hook.py --force", "timeout": 15, "async": true }]
-      }
+      { "matcher": "", "hooks": [{ "type": "command", "command": "memory-map-hook --force", "timeout": 15, "async": true }] }
     ]
   }
 }
 ```
-
-Mac/Linux: replace `python` with `python3` and Windows paths with POSIX paths.
 
 ### Step 6 — Global CLAUDE.md (Optional)
 
@@ -183,12 +177,14 @@ make setup TARGET=. LANG=python
 
 ### Per-Project Memory (CLAUDE.md)
 
-```bash
-# Windows
-copy C:\Users\yourname\memory_map\CLAUDE.md CLAUDE.md
+Add this block to `CLAUDE.md` at the project root (create the file if absent):
 
-# Mac/Linux
-cp ~/memory_map/CLAUDE.md CLAUDE.md
+```markdown
+## Session Setup (Required)
+At the start of every session, before doing anything else:
+1. Call `load_memory` with the current working directory
+2. Call `suggest_history` with the current working directory and the user's first message
+3. Read both outputs before exploring files or asking questions
 ```
 
 Commit `CLAUDE.md` so all teammates get session-start memory loading.
@@ -255,7 +251,7 @@ Skills and agents are plain markdown — no restart required after updating.
 ## Red Flags
 
 - **Registering memory_map with `-s project` instead of `-s user`** — project-scoped MCP servers are stored in `.claude/mcp.json` and apply to everyone who clones the repo; memory_map uses local paths that differ per machine; always register with `-s user`
-- **Copying `settings.local.json` into a shared repo without reviewing paths** — hooks reference absolute paths to formatters and history_hook.py; paths that exist on your machine may not exist on a teammate's; audit every `command` value before committing
+- **Copying `settings.local.json` into a shared repo without reviewing paths** — hooks may reference absolute paths to local formatters or scripts; paths that exist on your machine may not exist on a teammate's; audit every `command` value before committing
 - **Installing all 50+ skills globally then wondering why context is slow** — skills are loaded on-demand by description matching, not all at once; installing everything globally has no performance cost; if load times feel slow, the issue is elsewhere (large CLAUDE.md, slow MCP server)
 - **Omitting CLAUDE.md in a project after setting up memory_map** — without CLAUDE.md, Claude won't call `load_memory` at session start even if the MCP server is registered; the file is what triggers the session setup routine
 - **Using hardcoded Windows paths in hooks for a cross-platform team** — `C:/Users/yourname/...` hooks break on Mac/Linux; either use relative paths, an env var (`$HOME`), or keep lifecycle hooks in `~/.claude/settings.json` (personal) rather than `.claude/settings.json` (shared)
@@ -271,10 +267,11 @@ Skills and agents are plain markdown — no restart required after updating.
 - [ ] Skills copied to `~/.claude/skills/` (global) or `.claude/skills/` (project)
 - [ ] Agents copied to `~/.claude/agents/` or `.claude/agents/`
 - [ ] Slash commands copied to `~/.claude/commands/` or `.claude/commands/`
-- [ ] memory_map cloned, virtualenv created, dependencies installed
+- [ ] `pip install memory-map-mcp` succeeded; `memory-map-mcp` is on PATH
+- [ ] `MEMORY_MAP_MONGO_URI` exported in shell profile
 - [ ] memory_map registered: `claude mcp list` shows `memory_map`
 - [ ] Lifecycle hooks added to `~/.claude/settings.json` with `timeout` values
-- [ ] `CLAUDE.md` present at project root (copied from memory_map repo)
+- [ ] `CLAUDE.md` present at project root with the session-setup block
 - [ ] `.claude/settings.local.json` added to `.gitignore` if hooks use local paths
 - [ ] Tool configs installed for the project's language stack
 - [ ] New Claude Code session opened — a relevant skill activates automatically on first task
