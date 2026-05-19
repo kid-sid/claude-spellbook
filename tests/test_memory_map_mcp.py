@@ -284,8 +284,9 @@ async def test_get_history_chunks_fetches_by_id(mongo_session, tmp_project):
     index_text = extract_text(await mongo_session.call_tool("load_history", {
         "project_path": tmp_project, "last_n": 1,
     }))
-    # Pull the first id-looking token out of the index response.
-    match = re.search(r'["\']?id["\']?\s*[:=]\s*["\']?([A-Za-z0-9]+)', index_text)
+    # Pull the chunk ID out of the index response — server emits
+    # `[<24-hex-objectid>] <ts> tags:[...] tokens:N preview:"..."`.
+    match = re.search(r'\[([a-f0-9]{24})\]', index_text)
     assert match, f"could not find an id in load_history output: {index_text!r}"
     chunk_id = match.group(1)
     full = extract_text(await mongo_session.call_tool("get_history_chunks", {
