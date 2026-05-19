@@ -74,10 +74,14 @@ def search_web(query: str) -> str:
     return web_search_api(query)
 
 # Tool with multiple typed params
+# NOTE: `eval()` on a tool argument is RCE — the model can pass `__import__(...)`.
+# Use a constrained evaluator like `simpleeval` (or `ast.literal_eval` for literals).
+from simpleeval import simple_eval
+
 @function_tool
 def calculate(expression: str, precision: int = 2) -> str:
     """Evaluate a mathematical expression and return the result."""
-    result = eval(expression)  # use ast.literal_eval or a math parser in production
+    result = simple_eval(expression)
     return str(round(result, precision))
 
 # Tool returning structured data

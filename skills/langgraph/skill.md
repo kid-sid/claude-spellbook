@@ -167,7 +167,10 @@ def search_web(query: str) -> str:
 @tool
 def calculator(expression: str) -> float:
     """Evaluate a mathematical expression."""
-    return eval(expression)  # use safer eval in production
+    # `eval()` on a tool argument is RCE — model-supplied input can run arbitrary code.
+    # Use a constrained evaluator like `simpleeval` instead.
+    from simpleeval import simple_eval
+    return simple_eval(expression)
 
 tools = [search_web, calculator]
 tool_node = ToolNode(tools)              # pre-built node that runs tools
