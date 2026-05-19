@@ -421,7 +421,7 @@ agentex agents run --manifest manifest.yaml
 agentex agents run --manifest manifest.yaml --debug-worker --debug-port 5679
 ```
 
-Temporal UI (inspect workflow history, signals, failures): http://localhost:8080
+Temporal UI (inspect workflow history, signals, failures): <http://localhost:8080>
 
 ---
 

@@ -328,7 +328,7 @@ Use cases:
 |---|---|
 | `get_local_structure(path, max_depth=5)` | Gitignore-aware directory tree |
 | `get_github_structure(repo, branch="main", max_depth=5)` | GitHub repo file tree via API |
-| `get_git_history(path, count=5)` | Recent commits as `hash | subject` |
+| `get_git_history(path, count=5)` | Recent commits as `hash \| subject` |
 
 ---
 

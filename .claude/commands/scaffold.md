@@ -9,7 +9,7 @@ Scaffold a new service or project with production-ready boilerplate.
 
 2. Generate the project structure based on the selected stack:
 
-### For every project type:
+### For every project type
 - `README.md` — with prerequisites, quickstart (3 commands), config reference
 - `CLAUDE.md` — project-specific context for Claude Code
 - `.gitignore` — language-appropriate
@@ -19,7 +19,7 @@ Scaffold a new service or project with production-ready boilerplate.
 - `.claude/settings.local.json` — hooks for the chosen language
 - `Makefile` — install, dev, test, build, lint targets
 
-### For API services, additionally:
+### For API services, additionally
 - Health check endpoint (`/health/live`, `/health/ready`)
 - Structured logging setup (from observability skill)
 - Prometheus metrics endpoint (`/metrics`)
@@ -27,7 +27,7 @@ Scaffold a new service or project with production-ready boilerplate.
 - Request ID / correlation ID middleware
 - OpenAPI spec stub
 
-### For web apps (Svelte), additionally:
+### For web apps (Svelte), additionally
 - Layout with error boundary
 - Auth guard pattern
 - Environment variable handling

@@ -65,7 +65,7 @@ jobs:
 
       - name: Lint markdown files
         run: |
-          markdownlint-cli2 "**/*.md" "#node_modules" "#.github" || true
+          markdownlint-cli2 "**/*.md" "#node_modules" "#.github" "#.venv"
 
   validate-tools:
     name: Validate Tool Configs

@@ -216,7 +216,7 @@ CREATE TABLE posts (
 |---|---|
 | `CASCADE` | Child rows are meaningless without the parent (e.g., post comments deleted when post is deleted) |
 | `SET NULL` | Child row survives but loses its association (e.g., assigned user deleted, task becomes unassigned) |
-| `RESTRICT` | Prevent deletion of parent if children exist — use when you want explicit cleanup | 
+| `RESTRICT` | Prevent deletion of parent if children exist — use when you want explicit cleanup |
 | `NO ACTION` | Same as `RESTRICT` but deferred; default if unspecified — almost always specify explicitly |
 
 ---

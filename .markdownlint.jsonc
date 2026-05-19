@@ -1,0 +1,30 @@
+// markdownlint-cli2 config — see https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md
+// Disables stylistic rules the spellbook intentionally violates; keeps rules
+// that catch real markdown bugs (broken tables, heading hierarchy, etc).
+{
+  "default": true,
+
+  // Stylistic — skills use long dense lines and compact tables on purpose.
+  "MD013": false, // line-length
+  "MD060": false, // table-column-style (compact pipes are intentional)
+  "MD040": false, // fenced-code-language (ASCII diagrams have no language)
+
+  // Spacing — pragmatic; tightening these adds churn without value.
+  "MD022": false, // blanks-around-headings
+  "MD031": false, // blanks-around-fences
+  "MD032": false, // blanks-around-lists
+  "MD058": false, // blanks-around-tables
+
+  // Structure — skills use frontmatter, not H1; bold lead-ins are part of style.
+  "MD033": false, // no-inline-html (HTML comments and <details> blocks used intentionally)
+  "MD036": false, // no-emphasis-as-heading
+  "MD041": false, // first-line-heading (frontmatter comes first)
+
+  // Numbering / indentation — explicit numbering and 4-space indents diverge from defaults.
+  "MD007": false, // ul-indent
+  "MD029": false, // ol-prefix
+
+  // Duplicate headings are legitimate across skill sub-sections
+  // (e.g., every skill has its own "Installation" / "Examples").
+  "MD024": false
+}

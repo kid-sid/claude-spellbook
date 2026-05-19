@@ -23,7 +23,7 @@ Scan source files for:
 
 ### Phase 3: Security (security-scan skill patterns)
 Scan all files for:
-- Hardcoded secrets: patterns like `AKIA`, `sk-`, `ghp_`, `Bearer `, `password =`, `secret =`, `token =` with string values
+- Hardcoded secrets: patterns like `AKIA`, `sk-`, `ghp_`, `Bearer`, `password =`, `secret =`, `token =` with string values
 - Private keys: `-----BEGIN (RSA|EC|OPENSSH) PRIVATE KEY-----`
 - Connection strings with embedded credentials
 - `eval()`, `exec()`, `shell=True` / `child_process.exec` with non-literal input

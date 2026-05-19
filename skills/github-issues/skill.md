@@ -165,7 +165,7 @@ Affects all teams using our Zapier integration (~400 accounts per support data).
 
 A regression needs more than a standard bug report:
 
-```markdown
+````markdown
 ## Regression Details
 - **Last good version:** v2.3.0
 - **First bad version:** v2.3.1
@@ -181,14 +181,14 @@ git bisect good v2.3.0
 # ... binary search ...
 c8d1e4f is the first bad commit
 ```
-```
+````
 
 Always run `git bisect` before filing a regression — "it worked before" without a
 commit is not actionable.
 
 ## Flaky Test: Extra Requirements
 
-```markdown
+````markdown
 ## Failure Rate
 ~30% of runs over the last 7 days (tracked manually / via CI dashboard).
 
@@ -212,7 +212,7 @@ FAIL src/payments/__tests__/charge.test.ts
 
 ## Suspected Cause
 Async setup in `beforeEach` not awaited before first assertion.
-```
+````
 
 ## Security Vulnerabilities: Do NOT File Publicly
 

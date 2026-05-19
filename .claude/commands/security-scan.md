@@ -56,7 +56,7 @@ Audit code against the security skill checklist and OWASP best practices.
 - [ ] TLS 1.2+ enforced for external connections
 
 3. Also scan for secrets using pattern matching:
-   - API keys: patterns like `AKIA`, `sk-`, `ghp_`, `Bearer `
+   - API keys: patterns like `AKIA`, `sk-`, `ghp_`, `Bearer`
    - Private keys: `-----BEGIN (RSA|EC|OPENSSH) PRIVATE KEY-----`
    - Connection strings: `postgres://`, `mongodb://`, `redis://` with passwords
    - Generic patterns: `password\s*=`, `secret\s*=`, `token\s*=` with string values
