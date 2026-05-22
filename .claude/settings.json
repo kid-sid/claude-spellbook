@@ -3,12 +3,23 @@
     "allow": [
       "Edit(skills/**)",
       "Read(skills/**)",
+      "Write(skills/**)",
+      "Edit(.claude/agents/**)",
+      "Read(.claude/agents/**)",
+      "Write(.claude/agents/**)",
+      "Edit(.claude/commands/**)",
+      "Read(.claude/commands/**)",
+      "Write(.claude/commands/**)",
       "Bash(git ls-files*)",
       "Bash(git log*)",
       "Bash(git ls-files | xargs wc -l*)",
       "Bash(wc -l*)",
       "Bash(git diff*)",
-      "Bash(git grep*)"
+      "Bash(git grep*)",
+      "Bash(make lint*)",
+      "Bash(make format*)",
+      "Bash(make check*)",
+      "Bash(make help*)"
     ]
   },
   "hooks": {
