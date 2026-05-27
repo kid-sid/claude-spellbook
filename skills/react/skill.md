@@ -1,6 +1,6 @@
 ---
 name: react
-description: Use when building advanced React features — designing custom hooks, using Suspense or error boundaries, working in Next.js App Router with Server Components or Server Actions, applying TypeScript generics, or building animated UI with Framer Motion, View Transitions, or scroll-driven animations.
+description: Use when implementing advanced React patterns — designing custom hooks, using Suspense or error boundaries, applying TypeScript generics to components and hooks, or building animated UI with Framer Motion, View Transitions, or scroll-driven animations. For Next.js App Router, Server Components, or Server Actions, use nextjs.
 ---
 
 # React — Advanced Patterns

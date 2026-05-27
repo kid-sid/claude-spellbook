@@ -1,6 +1,6 @@
 ---
 name: frontend
-description: Use when designing React component structure, deciding where state should live, implementing data fetching with TanStack Query, building validated forms, or optimizing rendering performance.
+description: Use when making architecture-level React decisions — component decomposition, choosing where state should live, selecting a state manager (Context vs Redux vs Zustand) or a data-fetching library (TanStack Query vs SWR), or planning a rendering-performance budget. For advanced hook patterns, use react.
 ---
 
 # Frontend Patterns
