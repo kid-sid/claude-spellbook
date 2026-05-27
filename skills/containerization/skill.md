@@ -1,6 +1,6 @@
 ---
 name: containerization
-description: "Use when writing Dockerfiles, setting up docker-compose for local dev, configuring Kubernetes resources (Deployment, Service, Ingress, HPA), sizing pod resource limits, or packaging a service with Helm."
+description: "Use when configuring Kubernetes resources (Deployment, Service, Ingress, ConfigMap, Secret, HPA), sizing pod resource requests and limits, setting securityContext, or packaging a service with Helm charts. Not for writing Dockerfiles or docker-compose files — use docker."
 ---
 
 # Containerization

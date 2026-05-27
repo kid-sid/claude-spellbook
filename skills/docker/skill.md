@@ -1,6 +1,6 @@
 ---
 name: docker
-description: Use when writing or optimizing Dockerfiles, configuring Docker Compose services, debugging containers that behave differently from local, or reducing image size for Python and Node.js apps.
+description: Use when writing or optimizing a Dockerfile or docker-compose.yml for local dev, debugging containers that behave differently from local, or reducing image size for Python and Node.js apps. Not for Kubernetes resources or Helm — use containerization.
 ---
 
 # Docker Patterns
