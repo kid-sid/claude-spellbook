@@ -1,6 +1,6 @@
 ---
 name: database-design
-description: "Use when designing a schema, adding indexes to fix slow queries, writing a zero-downtime migration, diagnosing N+1 issues with EXPLAIN ANALYZE, or configuring connection pooling for a PostgreSQL-backed service."
+description: "Use when designing a relational schema — normalization (1NF–3NF), primary key strategy, modelling relationships, naming conventions, or planning a zero-downtime migration with the expand-contract pattern. For writing and tuning queries, indexes, or EXPLAIN ANALYZE, use postgresql."
 ---
 
 # Database Design

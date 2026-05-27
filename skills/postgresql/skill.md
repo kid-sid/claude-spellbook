@@ -1,6 +1,6 @@
 ---
 name: postgresql
-description: Use when writing complex PostgreSQL queries, diagnosing slow queries with EXPLAIN ANALYZE, designing indexes, handling concurrent writes, or planning safe schema migrations on large tables.
+description: Use when writing complex PostgreSQL queries, diagnosing slow queries with EXPLAIN ANALYZE, designing indexes (B-tree, GIN, partial, composite), handling concurrent writes and lock contention, or running safe live ALTER TABLE on large tables. For schema design, normalization, or relationship modelling, use database-design.
 ---
 
 # PostgreSQL Patterns
