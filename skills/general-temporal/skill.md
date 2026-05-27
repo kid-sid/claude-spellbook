@@ -1,6 +1,6 @@
 ---
 name: general-temporal
-description: Use when building or debugging Temporal workflows in Python — structuring workflows and activities, enforcing determinism, handling retries and timeouts, managing state across replays, or diagnosing workflow failures.
+description: Use when building or debugging standalone Temporal workers in Python outside of Agentex — structuring workflows and activities, enforcing determinism, handling retries and timeouts, managing state across replays, or diagnosing workflow failures. For Temporal-based Agentex agents, use temporal.
 ---
 
 # Temporal Workflows — Python Patterns

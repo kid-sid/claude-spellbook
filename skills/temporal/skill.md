@@ -1,6 +1,6 @@
 ---
 name: temporal
-description: Use when building or debugging Temporal-based Agentex agents — structuring workflows and activities, handling signal routing, managing state across replays, or diagnosing workflow failures and retry exhaustion.
+description: Use when building or debugging the Agentex ADK temporal agent type — structuring workflows and activities, handling signal routing, managing state across replays, or diagnosing workflow failures and retry exhaustion. For standalone Temporal workers outside of Agentex, use general-temporal.
 ---
 
 # Temporal Workflows (Agentex)
