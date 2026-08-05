@@ -10,7 +10,7 @@ A curated library of skills, slash commands, and agents that transform Claude Co
 into a precision engineering assistant — one spell at a time.
 
 [![CI](https://github.com/kid-sid/claude-spellbook/actions/workflows/ci.yml/badge.svg)](https://github.com/kid-sid/claude-spellbook/actions/workflows/ci.yml)
-![Skills](https://img.shields.io/badge/skills-64-blueviolet)
+![Skills](https://img.shields.io/badge/skills-65-blueviolet)
 ![Commands](https://img.shields.io/badge/slash%20commands-18-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
@@ -24,7 +24,7 @@ into a precision engineering assistant — one spell at a time.
 
 | Layer | What | Count |
 |---|---|---|
-| **Skills** | Structured instruction sets loaded contextually by Claude | 64 |
+| **Skills** | Structured instruction sets loaded contextually by Claude | 65 |
 | **Slash Commands** | One-shot `/commands` for common engineering tasks | 18 |
 | **Agents** | Autonomous subprocesses for multi-file, long-running tasks | 7 |
 | **Tool Configs** | Drop-in linter/formatter configs for 6 languages | 6 |
@@ -168,6 +168,7 @@ When you describe a task, Claude matches it against the **"When to Activate"** s
 | `feature-flags` | Adding feature flag support, designing rollouts or A/B experiments, choosing a flag platform, testing flag-gated code, or managing flag lifecycle |
 | `data-pipelines` | Building Airflow DAGs, writing dbt models or tests, designing incremental loads, implementing idempotent ETL/ELT, or validating data quality |
 | `github-issues` | Filing bug reports, feature requests, or tasks on GitHub; triaging severity; using the gh CLI; handling regressions, flaky tests, or security vulnerabilities |
+| `ui-ux-pro-max` | Designing interfaces, choosing styles, palettes, fonts, or auditing UI/UX design code |
 
 #### Testing
 | Skill | Activates when… |
